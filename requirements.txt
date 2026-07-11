@@ -1,0 +1,4 @@
+numpy==2.5.1
+pandas==3.0.3
+duckdb==1.5.4
+ipykernel
