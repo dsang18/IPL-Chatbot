@@ -1,0 +1,1195 @@
+tables:
+
+  dim_player:
+    description: Stores player information.
+    primary_key: player_id
+    columns:
+      player_id:
+        type: INTEGER
+        description: Unique player identifier.
+      
+      player_name:
+        type: VARCHAR
+        description: Name of the player.
+  
+
+  dim_season:
+    description: Stores season information.
+    primary_key: season_id
+    columns:
+      season_id:
+        type: INTEGER
+        description: Unique season identifier.
+      
+      season:
+        type: VARCHAR
+        description: Year of the season.
+
+
+  dim_team:
+    description: Stores team information.
+    primary_key: team_id
+    columns:
+      team_id:
+        type: INTEGER
+        description: Unique team identifier.
+      
+      team_name:
+        type: VARCHAR
+        description: Name of the team.
+  
+
+  dim_umpire:
+    description: Stores umpire information.
+    primary_key: umpire_id
+    columns:
+      umpire_id:
+        type: INTEGER
+        description: Unique umpire identifier.
+      
+      umpire:
+        type: VARCHAR
+        description: Name of the umpire.
+
+
+  dim_venue:
+    description: Stores venue information.
+    primary_key: venue_id
+    columns:
+      venue_id:
+        type: INTEGER
+        description: Unique venue identifier.
+      
+      venue:
+        type: VARCHAR
+        description: Name of the stadium.
+      
+      city:
+        type: VARCHAR
+        description: Name of the city where the stadium is located.
+  
+
+  dim_match:
+    description: Stores match information.
+    primary_key: match_id
+    columns:
+      match_id:
+        type: INTEGER
+        description: Unique match identifier.
+      
+      date:
+        type: DATE
+        description: Date when the match was played.
+      
+      toss_decision:
+        type: VARCHAR
+        description: Decision made by the toss-winning team after winning the toss. Possible values are 'BAT' (choose to bat first) or 'FIELD' (choose to bowl first).
+      
+      win_outcome:
+        type: VARCHAR
+        description: By how many runs or wickets has the team won the match. If the chasing team wins then it wins by 'N' wickets and if the defending team wins it wins by 'N' runs. It will be empty if the match is tied or has no result.
+      
+      result_type:
+        type: VARCHAR
+        description: Result of the match if it is tied or no result. For a completed match the result_type will be null. Possible values are 'TIE' and 'NO RESULT'.
+      
+      stage:
+        type: VARCHAR
+        description: The stage in the season when the match is played. Possible values are 'LEAGUE', 'SEMI FINAL', 'QUALIFIER 1', 'QUALIFIER 2', 'ELIMINATOR FINAL', 'ELIMINATOR', '3RD PLACE PLAY-OFF', 'FINAL'.
+
+      runs_target:
+        type: INTEGER
+        description: Target given by the first batting team to the chasing team.
+
+      season_id:
+        type: INTEGER
+        description: Unique identifier of the season. This is a foreign key that references dim_season.season_id.
+
+      venue_id:
+        type: INTEGER
+        description: Unique identifier of the venue where the match is played. This is a foreign key that references dim_venue.venue_id.
+      
+      toss_winner_id:
+        type: INTEGER
+        description: Unique identifier of the team who won the toss. This is a foreign key that references dim_team.team_id.
+      
+      match_winner_id:
+        type: INTEGER
+        description: Unique identifier of the team who won the match. This is a foreign key that references dim_team.team_id.
+      
+      player_of_match_id:
+        type: INTEGER
+        description: Unique identifier of the player of the match. This is a foreign key that references dim_player.player_id.
+      
+      superover_winner_id:
+        type: INTEGER
+        description: Unique identifier of the team who won the super over after a tie. This is a foreign key that references dim_team.team_id.
+
+
+  fact_delivery:
+    description: Stores each ball information.
+    columns:
+      match_id:
+        type: INTEGER
+        description: Unique identifier of the match. This is a foreign key that references dim_match.match_id.
+      
+      innings:
+        type: INTEGER
+        description: Number of innings that is played. Possible values are 1 and 2. Batting first team will have innings as 1 and batting second team will have innings as 2.
+      
+      ball_no:
+        type: FLOAT
+        description: The number of ball that is played in the match. Possible values are in a range of 0 to 20 with each ball represented with 1 decimal place like 0.1, 0.2, 0.3 etc.
+      
+      runs_batter:
+        type: INTEGER
+        description: Total runs scored by the batter on that ball. This does not include extra runs from wide, leg-byes, no-balls and byes, only runs that can be added in the batter's runs.
+      
+      runs_extras:
+        type: INTEGER
+        description: Total runs given as extras. This includes runs from leg-byes, byes, no-balls and wides.
+      
+      runs_total:
+        type: INTEGER
+        description: Total runs as a sum of runs_batter and runs_extras.
+      
+      runs_bowler:
+        type: INTEGER
+        description: Total runs the bowler has actually conceded. This does not include runs from byes and leg-byes.
+      
+      valid_ball:
+        type: BOOLEAN
+        description: Boolean value to identify if it is a valid ball or not. Possible values are 'true' and 'false'. A no-ball or a wide will not be considered as a valid ball hence it will be 'false' otherwise all balls are valid hence they will be 'true'.
+      
+      extra_type:
+        type: VARCHAR
+        description: The type of extra given by the bowler if eligible. Possible values are 'LEG-BYES', 'BYES', 'WIDES' and 'NOBALLS'.
+            
+      wicket_kind:
+        type: VARCHAR
+        description: The way in which the batsman got out on that ball. Possible values are 'CAUGHT', 'BOWLED', 'RUNOUT', 'LBW', 'CAUGHT AND BOWLED', 'RETIRED HURT' and 'STUMPED'.
+      
+      review_decision:
+        type: VARCHAR
+        description: Whether the umpire has reversed or upheld his decision when either of the team has reviewed it on that ball. Possible values are 'STRUCK DOWN' and 'UPHELD'.
+      
+      umpires_call:
+        type: BOOLEAN
+        description: Whether the umpires decision was right or not. 'true' if right and 'false' if wrong.
+      
+      team_runs:
+        type: INTEGER
+        description: Total runs for the batting team on that ball. This includes all types of runs including batters runs and extras.
+      
+      team_balls:
+        type: INTEGER
+        description: Cumulative number of valid balls played by the batting team uptill that ball.
+      
+      team_wickets:
+        type: INTEGER
+        description: Cumulative number of wickets fallen of the batting team uptill that ball.
+      
+      batter_runs:
+        type: INTEGER
+        description: Cumulative runs scored by the batter uptill that ball.
+      
+      batter_balls:
+        type: INTEGER
+        description: Cumulative number of valid balls played by the batter uptill that ball.
+      
+      bowler_wicket:
+        type: INTEGER
+        description: If a wicket has fallen, whether that wicket is taken by the bowler. 1 if a wicket has fallen and that is taken by the bowler, 0 otherwise.
+      
+      striker_out:
+        type: BOOLEAN
+        description: true if the striker got out on that ball else false.
+      
+      batting_team_id:
+        type: INTEGER
+        description: Unique identifier of the team who is batting. This is a foreign key that references dim_team.team_id.
+      
+      bowling_team_id:
+        type: INTEGER
+        description: Unique identifier of the team who is bowling. This is a foreign key that references dim_team.team_id.
+      
+      batter_id:
+        type: INTEGER
+        description: Unique identifier of the player who is facing the ball or is a striker. This is a foreign key that references dim_player.player_id.
+      
+      non_striker_id:
+        type: INTEGER
+        description: Unique identifier of the player who is on the non-striker end. This is a foreign key that references dim_player.player_id.
+      
+      bowler_id:
+        type: INTEGER
+        description: Unique identifier of the player who is bowling. This is a foreign key that references dim_player.player_id.
+      
+      player_out_id:
+        type: INTEGER
+        description: Unique identifier of the player who got out on that ball. This is a foreign key that references dim_player.player_id.
+      
+      fielder_id:
+        type: INTEGER
+        description: Unique identifier of the player who took the catch or effected the runout on that ball. This is a foreign key that references dim_player.player_id.
+      
+      review_batter_id:
+        type: INTEGER
+        description: Unique identifier of the player who has reviewed the umpire's decision on that ball. This is a foreign key that references dim_player.player_id.
+      
+      team_reviewed_id:
+        type: INTEGER
+        description: Unique identifier of the team who has reviewed the umpire's decision on that ball. This is a foreign key that references dim_team.team_id.
+      
+      umpire_id:
+        type: INTEGER
+        description: Unique identifier of the umpire who has made the decision on that ball. This is a foreign key that references dim_umpire.umpire_id.
+
+  
+  fact_delivery_enriched:
+    description: Stores enriched delivery information with additional calculated metrics.
+    columns:
+      match_id:
+        type: INTEGER
+        description: Unique identifier of the match. This is a foreign key that references dim_match.match_id.
+      
+      innings:
+        type: INTEGER
+        description: Number of innings that is played. Possible values are 1 and 2. Batting first team will have innings as 1 and batting second team will have innings as 2.
+      
+      ball_no:
+        type: FLOAT
+        description: The number of ball that is played in the match. Possible values are in a range of 0 to 20 with each ball represented with 1 decimal place like 0.1, 0.2, 0.3 etc.
+      
+      runs_batter:
+        type: INTEGER
+        description: Total runs scored by the batter on that ball. This does not include extra runs from wide, leg-byes, no-balls and byes, only runs that can be added in the batter's runs.
+      
+      runs_extras:
+        type: INTEGER
+        description: Total runs given as extras. This includes runs from leg-byes, byes, no-balls and wides.
+      
+      runs_total:
+        type: INTEGER
+        description: Total runs as a sum of runs_batter and runs_extras.
+      
+      runs_bowler:
+        type: INTEGER
+        description: Total runs the bowler has actually conceded. This does not include runs from byes and leg-byes.
+      
+      valid_ball:
+        type: BOOLEAN
+        description: Boolean value to identify if it is a valid ball or not. Possible values are 'true' and 'false'. A no-ball or a wide will not be considered as a valid ball hence it will be 'false' otherwise all balls are valid hence they will be 'true'.
+      
+      extra_type:
+        type: VARCHAR
+        description: The type of extra given by the bowler if eligible. Possible values are 'LEG-BYES', 'BYES', 'WIDES' and 'NOBALLS'.
+      
+      wicket_kind:
+        type: VARCHAR
+        description: The way in which the batsman got out on that ball. Possible values are 'CAUGHT', 'BOWLED', 'RUNOUT', 'LBW', 'CAUGHT AND BOWLED', 'RETIRED HURT' and 'STUMPED'.
+      
+      review_decision:
+        type: VARCHAR
+        description: Whether the umpire has reversed or upheld his decision when either of the team has reviewed it on that ball. Possible values are 'STRUCK DOWN' and 'UPHELD'.
+      
+      umpires_call:
+        type: BOOLEAN
+        description: Whether the umpires decision was right or not. 'true' if right and 'false' if wrong.
+      
+      team_runs:
+        type: INTEGER
+        description: Total runs for the batting team on that ball. This includes all types of runs including batters runs and extras.
+      
+      team_balls:
+        type: INTEGER
+        description: Cumulative number of valid balls played by the batting team uptill that ball.
+      
+      team_wicket:
+        type: INTEGER
+        description: Cumulative number of wickets fallen of the batting team uptill that ball.
+      
+      batter_runs:
+        type: INTEGER
+        description: Cumulative runs scored by the batter uptill that ball.
+      
+      batter_balls:
+        type: INTEGER
+        description: Cumulative number of valid balls played by the batter uptill that ball.
+      
+      is_bowler_wicket:
+        type: BOOLEAN
+        description: true if a wicket has fallen and that is taken by the bowler, false otherwise.
+      
+      striker_out:
+        type: BOOLEAN
+        description: true if the striker got out on that ball else false. 
+
+      batting_team_id:
+        type: INTEGER
+        description: Unique identifier of the team who is batting. This is a foreign key that references dim_team.team_id.
+      
+      bowling_team_id:
+        type: INTEGER
+        description: Unique identifier of the team who is bowling. This is a foreign key that references dim_team.team_id.
+
+      batter_id:
+        type: INTEGER
+        description: Unique identifier of the player who is facing the ball or is a striker. This is a foreign key that references dim_player.player_id.
+      
+      non_striker_id:
+        type: INTEGER
+        description: Unique identifier of the player who is on the non-striker end. This is a foreign key that references dim_player.player_id.
+      
+      bowler_id:
+        type: INTEGER
+        description: Unique identifier of the player who is bowling. This is a foreign key that references dim_player.player_id.
+      
+      player_out_id:
+        type: INTEGER
+        description: Unique identifier of the player who got out on that ball. This is a foreign key that references dim_player.player_id.
+      
+      fielder_id:
+        type: INTEGER
+        description: Unique identifier of the player who took the catch or effected the runout on that ball. This is a foreign key that references dim_player.player_id.
+      
+      review_batter_id:
+        type: INTEGER
+        description: Unique identifier of the player who has reviewed the umpire's decision on that ball. This is a foreign key that references dim_player.player_id.
+      
+      team_reviewed_id:
+        type: INTEGER
+        description: Unique identifier of the team who has reviewed the umpire's decision on that ball. This is a foreign key that references dim_team.team_id.
+      
+      umpire_id:
+        type: INTEGER
+        description: Unique identifier of the umpire who has made the decision on that ball. This is a foreign key that references dim_umpire.umpire_id.
+      
+      is_dot_ball:
+        type: BOOLEAN
+        description: true if the ball is a dot ball (no runs scored) else false.
+      
+      is_four:
+        type: BOOLEAN
+        description: true if the ball resulted in a four (boundary) else false.
+      
+      is_six:
+        type: BOOLEAN
+        description: true if the ball resulted in a six (over boundary) else false.
+      
+      is_boundary:
+        type: BOOLEAN
+        description: true if the ball resulted in a boundary (either four or six) else false.
+      
+      is_wicket:
+        type: BOOLEAN
+        description: true if the ball resulted in a wicket else false.
+      
+      over_number:
+        type: INTEGER
+        description: The over number in which the ball was bowled. Each over consists of 6 valid balls, so the over number can be calculated as the integer part of (ball_no - 0.1) / 6 + 1.
+      
+      phase:
+        type: VARCHAR
+        description: The phase of the innings in which the ball was bowled. Possible values are 'Powerplay Over', 'Middle Over', 'Death Over' and 'Super Over'. The phase can be determined based on the over_number and innings.
+      
+
+  agg_team:
+    description: Stores aggregated team-level statistics for each season.
+    columns:
+      team_id:
+        type: INTEGER
+        description: Unique identifier of the team. This is a foreign key that references dim_team.team_id.
+      
+      season_id:
+        type: INTEGER
+        description: Unique identifier of the season. This is a foreign key that references dim_season.season_id.
+      
+      matches:
+        type: INTEGER
+        description: Total number of matches played by the team in that season.
+      
+      wins:
+        type: INTEGER
+        description: Total number of matches won by the team in that season.
+      
+      ties:
+        type: INTEGER
+        description: Total number of matches that ended in a tie for the team in that season.
+      
+      no_results:
+        type: INTEGER
+        description: Total number of matches that had no result for the team in that season.
+      
+      losses:
+        type: INTEGER
+        description: Total number of matches lost by the team in that season.
+      
+      win_pct:
+        type: FLOAT
+        description: Win percentage of the team in that season, calculated as (wins / matches) * 100.
+      
+      runs_scored:
+        type: INTEGER
+        description: Total runs scored by the team in that season.
+      
+      runs_conceded:
+        type: INTEGER
+        description: Total runs conceded by the team in that season.
+      
+      wickets_taken:
+        type: INTEGER
+        description: Total wickets taken by the team in that season.
+      
+      wickets_lost:
+        type: INTEGER
+        description: Total wickets lost by the team in that season.
+      
+      avg_runs_scored:
+        type: FLOAT
+        description: Average runs scored by the team per match in that season, calculated as runs_scored / matches.
+      
+      avg_runs_conceded:
+        type: FLOAT
+        description: Average runs conceded by the team per match in that season, calculated as runs_conceded / matches.
+      
+      chasing_matches:
+        type: INTEGER
+        description: Total number of matches where the team batted second (chased) in that season.
+      
+      chasing_wins:
+        type: INTEGER
+        description: Total number of matches won by the team while chasing in that season.
+      
+      chasing_win_pct:
+        type: FLOAT
+        description: Win percentage of the team while chasing in that season, calculated as (chasing_wins / chasing_matches) * 100.
+      
+      defending_matches:
+        type: INTEGER
+        description: Total number of matches where the team batted first (defended) in that season. 
+      
+      defending_wins:
+        type: INTEGER
+        description: Total number of matches won by the team while defending in that season.
+      
+      defending_win_pct:
+        type: FLOAT
+        description: Win percentage of the team while defending in that season, calculated as (defending_wins / defending_matches) * 100.
+      
+      fours:
+        type: INTEGER
+        description: Total number of fours hit by the team in that season.
+      
+      sixes:
+        type: INTEGER
+        description: Total number of sixes hit by the team in that season.
+    
+  
+  agg_match:
+    description: Stores aggregated match-level statistics for each match.
+    primary_key: match_id
+    columns:
+      match_id:
+        type: INTEGER
+        description: Unique identifier of the match. This is a foreign key that references dim_match.match_id.
+      
+      date:
+        type: DATE
+        description: Date when the match was played.
+      
+      season_id:
+        type: INTEGER
+        description: Unique identifier of the season. This is a foreign key that references dim_season.season_id.
+      
+      venue_id:
+        type: INTEGER
+        description: Unique identifier of the venue where the match is played. This is a foreign key that references dim_venue.venue_id.
+      
+      batting_first_team_id:
+        type: INTEGER
+        description: Unique identifier of the team who batted first in the match. This is a foreign key that references dim_team.team_id.
+      
+      batting_second_team_id:
+        type: INTEGER
+        description: Unique identifier of the team who batted second in the match. This is a foreign key that references dim_team.team_id.
+      
+      first_innings_score:
+        type: INTEGER
+        description: Total runs scored by the team batting first in the match.
+      
+      first_innings_wickets:
+        type: INTEGER
+        description: Total wickets lost by the team batting first in the match.
+      
+      second_innings_score:
+        type: INTEGER
+        description: Total runs scored by the team batting second in the match.
+      
+      second_innings_wickets:
+        type: INTEGER
+        description: Total wickets lost by the team batting second in the match.
+      
+      winner_team_id:
+        type: INTEGER
+        description: Unique identifier of the team who won the match. This is a foreign key that references dim_team.team_id.
+      
+      win_outcome:
+        type: VARCHAR
+        description: By how many runs or wickets has the team won the match. If the chasing team wins then it wins by 'N' wickets and if the defending team wins it wins by 'N' runs. It will be empty if the match is tied or has no result.
+      
+      player_of_match_id:
+        type: INTEGER
+        description: Unique identifier of the player of the match. This is a foreign key that references dim_player.player_id.
+      
+      fours:
+        type: INTEGER
+        description: Total number of fours hit in the match.
+      
+      sixes:
+        type: INTEGER
+        description: Total number of sixes hit in the match.
+      
+      poweplay_overs_score_1:
+        type: INTEGER
+        description: Total runs scored by the team batting first in the powerplay overs (first 6 overs) of the match.
+      
+      middle_overs_score_1:
+        type: INTEGER
+        description: Total runs scored by the team batting first in the middle overs (7th to 15th overs) of the match.
+      
+      death_overs_score_1:
+        type: INTEGER
+        description: Total runs scored by the team batting first in the death overs (16th to 20th overs) of the match.
+      
+      poweplay_overs_score_2:
+        type: INTEGER
+        description: Total runs scored by the team batting second in the powerplay overs (first 6 overs) of the match.
+      
+      middle_overs_score_2:
+        type: INTEGER
+        description: Total runs scored by the team batting second in the middle overs (7th to 15th overs) of the match.
+      
+      death_overs_score_2:
+        type: INTEGER
+        description: Total runs scored by the team batting second in the death overs (16th to 20th overs) of the match.
+  
+
+  agg_venue:
+    description: Stores aggregated venue-level statistics for each season.
+    columns:
+      venue_id:
+        type: INTEGER
+        description: Unique identifier of the venue. This is a foreign key that references dim_venue.venue_id.
+      
+      season_id:
+        type: INTEGER
+        description: Unique identifier of the season. This is a foreign key that references dim_season.season_id.
+      
+      matches:
+        type: INTEGER
+        description: Total number of matches played at the venue in that season.
+      
+      avg_first_innings_score:
+        type: FLOAT
+        description: Average score of the team batting first at the venue in that season, calculated as total first innings score / matches.
+      
+      avg_second_innings_score:
+        type: FLOAT
+        description: Average score of the team batting second at the venue in that season, calculated as total second innings score / matches.
+      
+      highest_total:
+        type: INTEGER
+        description: Highest total score recorded at the venue in that season.
+      
+      lowest_total:
+        type: INTEGER
+        description: Lowest total score recorded at the venue in that season.
+      
+      highest_total_chased:
+        type: INTEGER
+        description: Highest total score successfully chased at the venue in that season.
+      
+      batting_first_wins:
+        type: INTEGER
+        description: Total number of matches won by the team batting first at the venue in that season.
+      
+      batting_second_wins:
+        type: INTEGER
+        description: Total number of matches won by the team batting second at the venue in that season.
+      
+      batting_first_win_pct:
+        type: FLOAT
+        description: Win percentage of the team batting first at the venue in that season, calculated as (batting_first_wins / matches) * 100.
+      
+      batting_second_win_pct:
+        type: FLOAT
+        description: Win percentage of the team batting second at the venue in that season, calculated as (batting_second_wins / matches) * 100.
+      
+      avg_wickets:
+        type: FLOAT
+        description: Average number of wickets lost by the team batting first at the venue in that season, calculated as total wickets lost / matches.
+      
+      fours:
+        type: INTEGER
+        description: Total number of fours hit at the venue in that season.
+      
+      sixes:
+        type: INTEGER
+        description: Total number of sixes hit at the venue in that season.
+
+
+  agg_player_batting:
+    description: Stores aggregated batting statistics for each player in each season.
+    columns:
+      player_id:
+        type: INTEGER
+        description: Unique identifier of the player. This is a foreign key that references dim_player.player_id.
+      
+      season_id:
+        type: INTEGER
+        description: Unique identifier of the season. This is a foreign key that references dim_season.season_id.
+      
+      matches:
+        type: INTEGER
+        description: Total number of matches played by the player in that season.
+      
+      innings:
+        type: INTEGER
+        description: Total number of innings played by the player in that season.
+      
+      runs:
+        type: INTEGER
+        description: Total runs scored by the player in that season.
+      
+      balls:
+        type: INTEGER
+        description: Total number of valid balls faced by the player in that season.
+      
+      average:
+        type: FLOAT
+        description: Batting average of the player in that season, calculated as runs / innings.
+
+      strike_rate:
+        type: FLOAT
+        description: Batting strike rate of the player in that season, calculated as (runs / balls) * 100.
+      
+      fours:
+        type: INTEGER
+        description: Total number of fours hit by the player in that season.  
+      
+      sixes:
+        type: INTEGER
+        description: Total number of sixes hit by the player in that season.
+      
+      fifties:
+        type: INTEGER
+        description: Total number of innings where the player scored between 50 and 99 runs in that season.
+      
+      hundreds:
+        type: INTEGER
+        description: Total number of innings where the player scored 100 or more runs in that season.
+      
+      dot_ball_pct:
+        type: FLOAT
+        description: Percentage of dot balls faced by the player in that season, calculated as (dot_balls / balls) * 100.
+      
+      boundary_pct:
+        type: FLOAT
+        description: Percentage of balls faced by the player that resulted in a boundary (either four or six) in that season, calculated as (boundary_balls / balls) * 100.
+      
+      highest_score:
+        type: INTEGER
+        description: Highest score achieved by the player in a single innings in that season.
+      
+
+  agg_player_bowling:
+    description: Stores aggregated bowling statistics for each player in each season.
+    columns:
+      player_id:
+        type: INTEGER
+        description: Unique identifier of the player. This is a foreign key that references dim_player.player_id.
+      
+      season_id:
+        type: INTEGER
+        description: Unique identifier of the season. This is a foreign key that references dim_season.season_id.
+      
+      matches:
+        type: INTEGER
+        description: Total number of matches played by the player in that season.
+      
+      innings:
+        type: INTEGER
+        description: Total number of innings bowled by the player in that season.
+      
+      balls_bowled:
+        type: INTEGER
+        description: Total number of valid balls bowled by the player in that season.
+      
+      overs:
+        type: FLOAT
+        description: Total number of overs bowled by the player in that season, calculated as balls_bowled / 6.
+      
+      runs_conceded:
+        type: INTEGER
+        description: Total runs conceded by the player in that season.
+      
+      wickets:
+        type: INTEGER
+        description: Total number of wickets taken by the player in that season.
+      
+      economy:
+        type: FLOAT
+        description: Bowling economy rate of the player in that season, calculated as runs_conceded / overs.
+      
+      bowling_average:
+        type: FLOAT
+        description: Bowling average of the player in that season, calculated as runs_conceded / wickets.
+      
+      bowling_strike_rate:
+        type: FLOAT
+        description: Bowling strike rate of the player in that season, calculated as balls_bowled / wickets.
+      
+      dot_balls:
+        type: INTEGER
+        description: Total number of dot balls bowled by the player in that season.
+      
+      dot_balls_pct:
+        type: FLOAT
+        description: Percentage of dot balls bowled by the player in that season, calculated as (dot_balls / balls_bowled) * 100.
+      
+      fours_conceded:
+        type: INTEGER
+        description: Total number of fours conceded by the player in that season.
+      
+      sixes_conceded:
+        type: INTEGER
+        description: Total number of sixes conceded by the player in that season.
+      
+      best_bowling_figures:
+        type: VARCHAR
+        description: Best bowling figures achieved by the player in a single innings in that season, represented as 'wickets/runs' (e.g., '5/20').
+  
+
+  agg_batter_vs_team:
+    description: Stores aggregated statistics for each player against each team in each season.
+    columns:
+      player_id:
+        type: INTEGER
+        description: Unique identifier of the player. This is a foreign key that references dim_player.player_id.
+      
+      opposition_team_id:
+        type: INTEGER
+        description: Unique identifier of the opposition team. This is a foreign key that references dim_team.team_id.
+      
+      season_id:
+        type: INTEGER
+        description: Unique identifier of the season. This is a foreign key that references dim_season.season_id.
+      
+      matches:
+        type: INTEGER
+        description: Total number of matches played by the player against the opposition team in that season.
+      
+      innings:
+        type: INTEGER
+        description: Total number of innings played by the player against the opposition team in that season.
+      
+      runs:
+        type: INTEGER
+        description: Total runs scored by the player against the opposition team in that season.
+      
+      balls:
+        type: INTEGER
+        description: Total number of valid balls faced by the player against the opposition team in that season.
+      
+      average:
+        type: FLOAT
+        description: Batting average of the player against the opposition team in that season, calculated as runs / innings.
+      
+      strike_rate:
+        type: FLOAT
+        description: Batting strike rate of the player against the opposition team in that season, calculated as (runs / balls) * 100.
+      
+      highest_score:
+        type: INTEGER
+        description: Highest score achieved by the player in a single innings against the opposition team in that season.
+      
+      fours:
+        type: INTEGER
+        description: Total number of fours hit by the player against the opposition team in that season.
+      
+      sixes:
+        type: INTEGER
+        description: Total number of sixes hit by the player against the opposition team in that season.
+      
+      fifties:
+        type: INTEGER
+        description: Total number of innings where the player scored between 50 and 99 runs against the opposition team in that season.
+      
+      hundreds:
+        type: INTEGER
+        description: Total number of innings where the player scored 100 or more runs against the opposition team in that season.
+      
+      dismissals:
+        type: INTEGER
+        description: Total number of times the player has been dismissed by the opposition team in that season.
+      
+      dot_ball_pct:
+        type: FLOAT
+        description: Percentage of dot balls faced by the player against the opposition team in that season, calculated as (dot_balls / balls) * 100.
+      
+      boundary_pct:
+        type: FLOAT
+        description: Percentage of balls faced by the player that resulted in a boundary (either four or six) against the opposition team in that season, calculated as (boundary_balls / balls) * 100.
+      
+  
+  agg_batter_vs_venue:
+    description: Stores aggregated statistics for each player at each venue in each season.
+    columns:
+      player_id:
+        type: INTEGER
+        description: Unique identifier of the player. This is a foreign key that references dim_player.player_id.
+      
+      venue_id:
+        type: INTEGER
+        description: Unique identifier of the venue. This is a foreign key that references dim_venue.venue_id.
+      
+      season_id:
+        type: INTEGER
+        description: Unique identifier of the season. This is a foreign key that references dim_season.season_id.
+      
+      matches:
+        type: INTEGER
+        description: Total number of matches played by the player at the venue in that season.
+      
+      innings:
+        type: INTEGER
+        description: Total number of innings played by the player at the venue in that season.
+      
+      runs:
+        type: INTEGER
+        description: Total runs scored by the player at the venue in that season.
+      
+      balls:
+        type: INTEGER
+        description: Total number of valid balls faced by the player at the venue in that season.
+      
+      average:
+        type: FLOAT
+        description: Batting average of the player at the venue in that season, calculated as runs / innings.
+      
+      strike_rate:
+        type: FLOAT
+        description: Batting strike rate of the player at the venue in that season, calculated as (runs / balls) * 100.
+      
+      highest_score:
+        type: INTEGER
+        description: Highest score achieved by the player in a single innings at the venue in that season.
+      
+      fours:
+        type: INTEGER
+        description: Total number of fours hit by the player at the venue in that season.
+      
+      sixes:
+        type: INTEGER
+        description: Total number of sixes hit by the player at the venue in that season.
+      
+      fifties:
+        type: INTEGER
+        description: Total number of innings where the player scored between 50 and 99 runs at the venue in that season.
+      
+      hundreds:
+        type: INTEGER
+        description: Total number of innings where the player scored 100 or more runs at the venue in that season.
+      
+      dismissals:
+        type: INTEGER
+        description: Total number of times the player has been dismissed at the venue in that season.
+      
+      dot_ball_pct:
+        type: FLOAT
+        description: Percentage of dot balls faced by the player at the venue in that season, calculated as (dot_balls / balls) * 100.
+      
+      boundary_pct:
+        type: FLOAT
+        description: Percentage of balls faced by the player that resulted in a boundary (either four or six) at the venue in that season, calculated as (boundary_balls / balls) * 100.
+      
+
+  agg_batter_vs_phase:
+      description: Stores aggregated statistics for each player in each phase of the innings in each season.
+      columns:
+        player_id:
+          type: INTEGER
+          description: Unique identifier of the player. This is a foreign key that references dim_player.player_id.
+        
+        season_id:
+          type: INTEGER
+          description: Unique identifier of the season. This is a foreign key that references dim_season.season_id.
+        
+        phase:
+          type: VARCHAR
+          description: The phase of the innings. Possible values are 'Powerplay Over', 'Middle Over', 'Death Over' and 'Super Over'.
+        
+        matches:
+          type: INTEGER
+          description: Total number of matches played by the player in that phase in that season.
+        
+        innings:
+          type: INTEGER
+          description: Total number of innings played by the player in that phase in that season.
+        
+        runs:
+          type: INTEGER
+          description: Total runs scored by the player in that phase in that season.
+        
+        balls:
+          type: INTEGER
+          description: Total number of valid balls faced by the player in that phase in that season.
+        
+        average:
+          type: FLOAT
+          description: Batting average of the player in that phase in that season, calculated as runs / innings.
+        
+        strike_rate:
+          type: FLOAT
+          description: Batting strike rate of the player in that phase in that season, calculated as (runs / balls) * 100.
+        
+        highest_score:
+        type: INTEGER
+        description: Highest score achieved by the player in a single innings at the venue in that season.
+      
+        fours:
+          type: INTEGER
+          description: Total number of fours hit by the player at the venue in that season.
+        
+        sixes:
+          type: INTEGER
+          description: Total number of sixes hit by the player at the venue in that season.
+        
+        fifties:
+          type: INTEGER
+          description: Total number of innings where the player scored between 50 and 99 runs at the venue in that season.
+        
+        hundreds:
+          type: INTEGER
+          description: Total number of innings where the player scored 100 or more runs at the venue in that season.
+        
+        dismissals:
+          type: INTEGER
+          description: Total number of times the player has been dismissed at the venue in that season.
+        
+        dot_ball_pct:
+          type: FLOAT
+          description: Percentage of dot balls faced by the player at the venue in that season, calculated as (dot_balls / balls) * 100.
+        
+        boundary_pct:
+          type: FLOAT
+          description: Percentage of balls faced by the player that resulted in a boundary (either four or six) at the venue in that season, calculated as (boundary_balls / balls) * 100.
+
+
+  agg_bowler_vs_team:
+      description: Stores aggregated statistics for each bowler against each team in each season.
+      columns:
+        player_id:
+          type: INTEGER
+          description: Unique identifier of the player. This is a foreign key that references dim_player.player_id.
+        
+        season_id:
+          type: INTEGER
+          description: Unique identifier of the season. This is a foreign key that references dim_season.season_id.
+        
+        opposition_team_id:
+          type: INTEGER
+          description: Unique identifier of the opposition team. This is a foreign key that references dim_team.team_id.
+        
+        matches:
+          type: INTEGER
+          description: Total number of matches played by the bowler against the opposition team in that season.
+        
+        innings:
+          type: INTEGER
+          description: Total number of innings bowled by the bowler against the opposition team in that season.
+        
+        balls_bowled:
+          type: INTEGER
+          description: Total number of valid balls bowled by the bowler against the opposition team in that season.
+        
+        overs:
+          type: FLOAT
+          description: Total number of overs bowled by the bowler against the opposition team in that season, calculated as balls_bowled / 6.
+        
+        runs_conceded:
+          type: INTEGER
+          description: Total runs conceded by the bowler against the opposition team in that season.
+        
+        wickets:
+          type: INTEGER
+          description: Total number of wickets taken by the bowler against the opposition team in that season.
+        
+        economy:
+          type: FLOAT
+          description: Bowling economy rate of the bowler against the opposition team in that season, calculated as runs_conceded / overs.
+        
+        bowling_avg:
+          type: FLOAT
+          description: Bowling average of the bowler against the opposition team in that season, calculated as runs_conceded / wickets.
+        
+        bowling_strike_rate:
+          type: FLOAT
+          description: Bowling strike rate of the bowler against the opposition team in that season, calculated as balls_bowled / wickets.
+        
+        dot_balls:
+          type: INTEGER
+          description: Total number of dot balls bowled by the bowler against the opposition team in that season.
+        
+        dot_balls_pct:
+          type: FLOAT
+          description: Percentage of dot balls bowled by the bowler against the opposition team in that season, calculated as (dot_balls / balls_bowled) * 100.
+        
+        fours_conceded:
+          type: INTEGER
+          description: Total number of fours conceded by the bowler against the opposition team in that season.
+        
+        sixes_conceded:
+          type: INTEGER
+          description: Total number of sixes conceded by the bowler against the opposition team in that season.
+      
+
+  agg_bowler_vs_venue:
+      description: Stores aggregated statistics for each bowler at each venue in each season.
+      columns:
+        player_id:
+          type: INTEGER
+          description: Unique identifier of the player. This is a foreign key that references dim_player.player_id.
+        
+        season_id:
+          type: INTEGER
+          description: Unique identifier of the season. This is a foreign key that references dim_season.season_id.
+        
+        venue_id:
+          type: INTEGER
+          description: Unique identifier of the venue. This is a foreign key that references dim_venue.venue_id.
+        
+        matches:
+          type: INTEGER
+          description: Total number of matches played by the bowler at the venue in that season.
+        
+        innings:
+          type: INTEGER
+          description: Total number of innings bowled by the bowler at the venue in that season.
+        
+        balls_bowled:
+          type: INTEGER
+          description: Total number of valid balls bowled by the bowler at the venue in that season.
+        
+        overs:
+          type: FLOAT
+          description: Total number of overs bowled by the bowler at the venue in that season, calculated as balls_bowled / 6.
+        
+        runs_conceded:
+          type: INTEGER
+          description: Total runs conceded by the bowler at the venue in that season.
+        
+        wickets:
+          type: INTEGER
+          description: Total number of wickets taken by the bowler at the venue in that season.
+        
+        economy:
+          type: FLOAT
+          description: Bowling economy rate of the bowler at the venue in that season, calculated as runs_conceded / overs.
+        
+        bowling_avg:
+          type: FLOAT
+          description: Bowling average of the bowler at the venue in that season, calculated as runs_conceded / wickets.
+        
+        bowling_strike_rate:
+          type: FLOAT
+          description: Bowling strike rate of the bowler at the venue in that season, calculated as balls_bowled / wickets.
+        
+        dot_balls:
+          type: INTEGER
+          description: Total number of dot balls bowled by the bowler at the venue in that season.
+        
+        dot_balls_pct:
+          type: FLOAT
+          description: Percentage of dot balls bowled by the bowler at the venue in that season, calculated as (dot_balls / balls_bowled) * 100.
+        
+        fours_conceded:
+          type: INTEGER
+          description: Total number of fours conceded by the bowler at the venue in that season.
+        
+        sixes_conceded:
+          type: INTEGER
+          description: Total number of sixes conceded by the bowler at the venue in that season.
+
+
+
+  agg_bowler_vs_phase:
+      description: Stores aggregated statistics for each bowler in each phase of the innings in each season.
+      columns:
+        player_id:
+          type: INTEGER
+          description: Unique identifier of the player. This is a foreign key that references dim_player.player_id.
+        
+        season_id:
+          type: INTEGER
+          description: Unique identifier of the season. This is a foreign key that references dim_season.season_id.
+        
+        phase:
+          type: VARCHAR
+          description: Unique identifier of the phase of the innings. Possible values are 'Powerplay Over', 'Middle Over', 'Death Over' and 'Super Over'.
+        
+        matches:
+          type: INTEGER
+          description: Total number of matches played by the bowler in the specified phase in that season.
+        
+        innings:
+          type: INTEGER
+          description: Total number of innings bowled by the bowler in the specified phase in that season.
+        
+        balls_bowled:
+          type: INTEGER
+          description: Total number of valid balls bowled by the bowler in the specified phase in that season.
+        
+        overs:
+          type: FLOAT
+          description: Total number of overs bowled by the bowler in the specified phase in that season, calculated as balls_bowled / 6.
+        
+        runs_conceded:
+          type: INTEGER
+          description: Total runs conceded by the bowler in the specified phase in that season.
+        
+        wickets:
+          type: INTEGER
+          description: Total number of wickets taken by the bowler in the specified phase in that season.
+        
+        economy:
+          type: FLOAT
+          description: Bowling economy rate of the bowler in the specified phase in that season, calculated as runs_conceded / overs.
+        
+        bowling_avg:
+          type: FLOAT
+          description: Bowling average of the bowler in the specified phase in that season, calculated as runs_conceded / wickets.
+        
+        bowling_strike_rate:
+          type: FLOAT
+          description: Bowling strike rate of the bowler in the specified phase in that season, calculated as balls_bowled / wickets.
+        
+        dot_balls:
+          type: INTEGER
+          description: Total number of dot balls bowled by the bowler in the specified phase in that season.
+        
+        dot_balls_pct:
+          type: FLOAT
+          description: Percentage of dot balls bowled by the bowler in the specified phase in that season, calculated as (dot_balls / balls_bowled) * 100.
+        
+        fours_conceded:
+          type: INTEGER
+          description: Total number of fours conceded by the bowler in the specified phase in that season.
+        
+        sixes_conceded:
+          type: INTEGER
+          description: Total number of sixes conceded by the bowler in the specified phase in that season.
+      
+
+      
