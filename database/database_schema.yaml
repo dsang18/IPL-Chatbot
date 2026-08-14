@@ -640,7 +640,7 @@ tables:
 
 
   agg_player_batting:
-    description: Stores aggregated batting statistics for each player in each season.
+    description: Stores season-wise aggregated batting statistics for each player. Each row represents a player's batting performance in a single IPL season, including metrics such as matches played, innings, runs scored, average, strike rate, boundaries, centuries, half-centuries, and other batting statistics.
     columns:
       player_id:
         type: INTEGER
@@ -704,7 +704,7 @@ tables:
       
 
   agg_player_bowling:
-    description: Stores aggregated bowling statistics for each player in each season.
+    description: Stores season-wise aggregated bowling statistics for each player. Each row represents a player's bowling performance in a single IPL season, including metrics such as matches played, innings, balls bowled, wickets taken, runs conceded, economy rate, bowling average, strike rate, maiden overs, and other bowling statistics.
     columns:
       player_id:
         type: INTEGER
@@ -1190,6 +1190,3 @@ tables:
         sixes_conceded:
           type: INTEGER
           description: Total number of sixes conceded by the bowler in the specified phase in that season.
-      
-
-      
