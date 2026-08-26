@@ -1,0 +1,8 @@
+
+Original User Question:
+{user_question}
+
+Final Analytical Dataset:
+{query_result}
+
+Analyze this dataset and answer the original user question.

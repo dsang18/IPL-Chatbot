@@ -1,6 +1,14 @@
 from utils.sql_context_dataclass import SQLAgentContext
-from agents.sql_agent import generate_sql
-from utils.database import execute_query
+from agents.sql_agent import SQLAgent
+from agents.table_selector_agent import TableSelectorAgent
+from agents.master_agent import MasterAgent
+from agents.sql_validator import SQLValidator
+from agents.sql_executor import SQLExecutor
+from agents.deeper_analysis import DeeperAnalysisChecker
+from agents.insights_agent import InsightGenerator
+from agents.kpi_agent import KPIGenerator
+from agents.visualization_agent import VisualizationGenerator
+from agents.master_decision_agent import MasterDecisionAgent
 from pprint import pprint
 
 # import requests
@@ -18,27 +26,21 @@ from pprint import pprint
 # models = [i['name'] for i in response.json()['data']]
 # print(models)
 
-question = "Who has taken most wickets against chennai in IPL?"
+question = "How has kohli's batting improved over the years?"
 
 
 sql_context = SQLAgentContext(user_question=question)
-sql_context = generate_sql(sql_context)
-print(sql_context.generated_sql)
+master_agent = MasterAgent(
+    table_selector=TableSelectorAgent(),
+    sql_generator=SQLAgent(),
+    sql_validator=SQLValidator(),
+    sql_executor=SQLExecutor(),
+    deeper_analysis_checker=DeeperAnalysisChecker(),
+    insights_generator=InsightGenerator(),
+    kpi_generator=KPIGenerator(),
+    visualization_generator=VisualizationGenerator(),
+    master_decision_taker=MasterDecisionAgent()
+)
 
-if (sql_context.is_valid):
-    sql_query_result = execute_query(sql_context.generated_sql)
-else:
-    sql_query_result = {"error": "SQL query is not valid. Please check the validation errors."}
 
-
-print("\n\n"+f"="*100)
-print(f"SQL Query Context")
-print(f"="*100)
-pprint(sql_context)
-print(f"="*100)
-
-print("\n\n"+f"="*100)
-print(f"SQL Query Result")
-print(f"="*100)
-pprint(sql_query_result)
-print(f"="*100)
+sql_context = master_agent.run(question)

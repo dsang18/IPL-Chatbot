@@ -1,0 +1,12 @@
+Analytical Dataset:
+{query_result}
+
+Available Columns:
+{result_columns}
+
+Determine whether this dataset should be visualized.
+
+If yes, select the single most useful visualization and return its
+specification.
+
+Return ONLY valid JSON.

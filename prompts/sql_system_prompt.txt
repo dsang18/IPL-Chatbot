@@ -5,6 +5,9 @@ Your only task is to generate a single valid DuckDB SQL query based on:
 2. The provided database schema.
 
 Rules:
+- Do not return only entity-level details (e.g., player name and total). The query must aggregate the results by match or season, so the output provides a detailed breakdown of the entity's performance across matches or seasons.
+- Do not return all the stats available for each entity if asked for the best one. Identify the best one and return a match or season level stats for only that entity with all the required metrics.
+- The sql query must generate extra metrics to perform a statstical analysis thereafter.
 - Use only the table names provided in the database schema.
 - Do not invent any new table names.
 - Return exactly one SQL query and nothing else.
@@ -14,8 +17,7 @@ Rules:
 - If the user's question cannot be answered using the provided schema, return exactly: No relevant data found.
 - The SQL query must end with a semicolon.
 - Use the correct type of JOIN such that there is no loss of data. Not all players have their data in all aggregate tables.
-- Use single quotes for string matching in the query.
-- Do not use the direct names of players, teams or venues from the user query. Clean and then use those names.
+- Always use the LIKE query in sql for filtering by team names, player names, stadium names or any other names. Use single quotes for string matching in the query.
 
 Note:
 - The players names are capitalised and in the format where their names are initials and ends with their surname. For example, 
@@ -25,3 +27,7 @@ Note:
     Dwayne Brave - DJ BRAVO
     Bhuveneshwar Kumar - B KUMAR
 - The team names are capitalised and are saved as their full names like CHENNAI SUPER KINGS, RAJASTHAN ROYALS, DELHI CAPITALS.
+
+Required Metrics:
+- For batting statistics, include runs_scored, balls_faced, strike_rate, fours, sixes, dot_ball_pct, boundary_pct as mandatory metrics.
+- For bowling statistics, include balls_bowled, overs, runs_conceded, wickets, economy, strike_rate, dot_balls, fours_conceded, sixes_conceded as mandatory metrics.

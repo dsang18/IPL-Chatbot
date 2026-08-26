@@ -9,7 +9,7 @@ The database schema has the following information:
 2. description
 3. column names
 
-You have to return a list of tables that will be required to answer the user query including all the dimension tables as required. Use the aggregate tables wherever possible.
+You have to return a list of tables that will be required to answer the user query including all the dimension tables as required. Use the aggregate tables and enriched delivery table wherever possible.
 
 RULES:
 1. Strictly use table names only from the provided database schema.

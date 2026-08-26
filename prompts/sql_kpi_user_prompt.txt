@@ -1,0 +1,8 @@
+Original User Question:
+{user_question}
+
+Analytical Dataset:
+{query_result}
+
+Select the 3-5 most relevant KPIs that best answer the user's question.
+Return ONLY the required JSON dictionary.

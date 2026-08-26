@@ -1,0 +1,58 @@
+DEEPER ANALYSIS REQUIRED
+
+The previous SQL query has already identified the relevant entity/entities, but
+the previous result is NOT sufficiently detailed to answer the user's question
+at an analytical level.
+
+You must now generate a NEW SQL query that retrieves the underlying detailed
+data for the identified entity/entities.
+
+Original User Question:
+{user_question}
+
+Database Schema:
+{database_schema}
+
+Previous SQL Query Result:
+{previous_result}
+
+Identified Entity/Entities:
+{identified_entities}
+
+Required Analytical Grain:
+{required_grain}
+
+IMPORTANT RULES:
+
+1. Do NOT return the previous leaderboard/ranking again.
+
+2. Use the identified entity/entities from the previous result to filter the
+   new query.
+
+3. Generate the query at the requested analytical grain.
+
+4. Include All metrics available from the schema of the aggregate table provided.
+
+5. Include the relevant dimensions needed to understand the complete story.
+   For example, if the grain is player + season + match, include player,
+   season and match information in the result.
+
+6. The new query must still answer the ORIGINAL user question. Do not change
+   the question or introduce unrelated analysis.
+
+7. Do not simply aggregate the previous result. Retrieve the underlying data
+   necessary for deeper analysis.
+
+8. Return only the SQL query. Do not provide explanations, markdown, or
+   commentary.
+
+9. Always use the LIKE query in sql for filtering by team names, player names, stadium names or any other names. Use single quotes for string matching in the query.
+
+Note:
+- The players names are capitalised and in the format where their names are initials and ends with their surname. For example, 
+    Rohit Sharma - RS SHARMA
+    Virat Kohli - V KOHLI
+    Jasprit Bumrah - JJ BUMRAH
+    Dwayne Brave - DJ BRAVO
+    Bhuveneshwar Kumar - B KUMAR
+- The team names are capitalised and are saved as their full names like CHENNAI SUPER KINGS, RAJASTHAN ROYALS, DELHI CAPITALS.
