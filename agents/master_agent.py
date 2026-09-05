@@ -1,264 +1,112 @@
+from collections.abc import Callable
+
 from utils.sql_context_dataclass import SQLAgentContext
-from utils.schema_loader import load_database_schema,load_custom_database_schema, get_database_schema_metadata
+from utils.schema_loader import get_database_schema_metadata, load_custom_database_schema, load_database_schema
+
+
+ProgressCallback = Callable[[str, str], None]
+
 
 class MasterAgent:
+    """Coordinates IPL analysis agents while enforcing the SQL lifecycle."""
 
-    def __init__(self,table_selector,sql_generator,sql_validator,sql_executor, deeper_analysis_checker,insights_generator,kpi_generator,visualization_generator, master_decision_taker):
+    def __init__(self, table_selector, sql_generator, sql_executor, insights_generator,
+                 kpi_generator, visualization_generator, master_decision_taker):
         self.table_selector = table_selector
         self.sql_generator = sql_generator
-        self.sql_validator = sql_validator
         self.sql_executor = sql_executor
-        self.deeper_analysis_checker = deeper_analysis_checker
         self.insights_generator = insights_generator
         self.kpi_generator = kpi_generator
         self.visualization_generator = visualization_generator
         self.master_decision_agent = master_decision_taker
 
-    def run(self, user_question: str):
+    def run(self, user_question: str, on_progress: ProgressCallback | None = None):
         state = SQLAgentContext(user_question=user_question)
         schema = load_database_schema(state.database_schema_path)
-        while state.iteration < state.max_iterations:
-            state.iteration += 1
-            decision = self.master_decision_agent.run(state)
-            state.next_agent = decision["next_agent"]
-            print(f"Master Agent -> {state.next_agent}")
-            print(f"Reason -> {decision['reason']}")
-            if state.next_agent=="complete":
-                break
-            self.execute_agent(state.next_agent, state, schema)
-            state.completed_agents.append(state.next_agent)
-            state.validation_errors = []
-        return state
+        self._emit(on_progress, "started", "Understanding your IPL question.")
 
+        while True:
+            next_agent = self._next_agent(state)
+            state.next_agent = next_agent
+            if next_agent == "complete":
+                self._emit(on_progress, "complete", "Your IPL analysis is ready.")
+                return state
+            if next_agent == "no_data":
+                self._emit(on_progress, "no_data", "No relevant data was found after three attempts.")
+                return state
 
-    def execute_agent(self, agent_name: str, state: SQLAgentContext, schema={}):
+            self._emit(on_progress, next_agent, self._progress_message(next_agent))
+            self.execute_agent(next_agent, state, schema)
+            state.completed_agents.append(next_agent)
 
+    def _next_agent(self, state: SQLAgentContext) -> str:
+        """Preserve LLM orchestration while protecting non-negotiable transitions."""
+        if not state.selected_tables:
+            return "table_selector"
+        if not state.generated_sql:
+            return "sql_generator"
+        if not state.completed_agents or state.completed_agents[-1] == "sql_generator":
+            return "sql_executor"
+        if state.completed_agents[-1] == "sql_executor" and state.query_result.empty:
+            return "sql_generator" if state.sql_attempts < state.max_sql_attempts else "no_data"
+
+        decision = self.master_decision_agent.run(state)
+        allowed_agents = {"insights_generator", "kpi_generator", "visualization_generator", "complete"}
+        next_agent = decision["next_agent"]
+        if next_agent not in allowed_agents:
+            next_agent = "complete"
+
+        required_agents = ("kpi_generator", "insights_generator", "visualization_generator")
+        if next_agent in required_agents and next_agent not in state.completed_agents:
+            return next_agent
+        for agent in required_agents:
+            if agent not in state.completed_agents:
+                return agent
+        return "complete"
+
+    def execute_agent(self, agent_name: str, state: SQLAgentContext, schema: dict):
         if agent_name == "table_selector":
-            metadata_schema = get_database_schema_metadata(schema)
-
-            state.selected_tables = self.table_selector.run(state.user_question,metadata_schema)
-
-            print(f"\nTables selected:\n{state.selected_tables}")
-
-
+            state.selected_tables = self.table_selector.run(
+                state.user_question, get_database_schema_metadata(schema)
+            )
         elif agent_name == "sql_generator":
-
-            custom_schema = load_custom_database_schema(database_schema=schema,tables=state.selected_tables)
+            custom_schema = load_custom_database_schema(schema, state.selected_tables)
             state.generated_sql = self.sql_generator.run(
                 user_question=state.user_question,
                 database_schema=custom_schema,
-                previous_result=state.query_result,
-                required_grain=state.required_grain,
-                required_metrics=state.required_metrics,
-                identified_entities=state.identified_entities,
-                validation_errors=state.validation_errors,
-                generated_sql=state.generated_sql
+                execution_error=state.execution_error,
+                generated_sql=state.generated_sql,
             )
-            print(f"\nGenerated SQL:\n{state.generated_sql}")
-
-
-        elif agent_name == "sql_validator":
-            validation_result = self.sql_validator.validate(state.generated_sql,schema)
-            state.validation_errors = validation_result["errors"]
-            print(f"\nSQL Valid: {validation_result['valid']}")
-            print(f"Validation Errors: {state.validation_errors}")
-
-
+            state.execution_error = None
         elif agent_name == "sql_executor":
-
-            state.query_result = self.sql_executor.run(
-                state.generated_sql
-            )
-
-            print(
-                f"\nQuery Result:\n{state.query_result}"
-            )
-
-
-        elif agent_name == "deeper_analysis_checker":
-
-            decision = self.deeper_analysis_checker.run(
-                user_question=state.user_question,
-                query_result=state.query_result
-            )
-
-            state.requires_deeper_analysis = (
-                decision["requires_deeper_analysis"]
-            )
-
-            state.required_grain = str(
-                decision.get("required_grain", "")
-            )
-
-            state.required_metrics = decision.get(
-                "required_metrics",
-                []
-            )
-
-            state.identified_entities = decision.get(
-                "identified_entities",
-                []
-            )
-
-            print(
-                f"\nDeeper Analysis Decision:\n{decision}"
-            )
-
-
+            state.sql_attempts += 1
+            try:
+                state.query_result = self.sql_executor.run(state.generated_sql)
+                state.execution_error = "The query returned no rows." if state.query_result.empty else None
+            except Exception as error:
+                state.query_result = state.query_result.iloc[0:0]
+                state.execution_error = f"Database execution failed: {error}"
         elif agent_name == "insights_generator":
-
-            state.insights = self.insights_generator.run(
-                user_question=state.user_question,
-                query_result=state.query_result
-            )
-
-            print(
-                f"\nInsights:\n{state.insights}"
-            )
-
-
+            state.insights = self.insights_generator.run(state.user_question, state.query_result)
         elif agent_name == "kpi_generator":
-
-            state.kpis = self.kpi_generator.run(
-                user_question=state.user_question,
-                query_result=state.query_result
-            )
-
-            print(
-                f"\nKPIs:\n{state.kpis}"
-            )
-
-
+            state.kpis = self.kpi_generator.run(state.user_question, state.query_result)
         elif agent_name == "visualization_generator":
-
-            state.visualizations = (
-                self.visualization_generator.run(
-                    user_question=state.user_question,
-                    query_result=state.query_result
-                )
-            )
-
-            print(
-                f"\nVisualization:\n{state.visualizations}"
-            )
-
-
+            state.visualizations = self.visualization_generator.run(state.user_question, state.query_result)
         else:
+            raise ValueError(f"Unknown agent: {agent_name}")
 
-            raise ValueError(
-                f"Unknown agent: {agent_name}"
-            )
-    # def run(self, user_question: str):
+    @staticmethod
+    def _emit(callback: ProgressCallback | None, stage: str, message: str) -> None:
+        if callback:
+            callback(stage, message)
 
-    #     state = SQLAgentContext(user_question=user_question)
-
-    #     state.iteration += 1
-    #     # Load the database schema from a YAML file
-    #     schema = load_database_schema(state.database_schema_path)
-
-    #     metadata_schema = get_database_schema_metadata(schema)
-    #     state.selected_tables = self.table_selector.run(user_question, metadata_schema)
-
-    #     print(f"\nTables selected for the user's question: {state.selected_tables}")
-
-    #     # Load the custom database schema based on the decided tables
-    #     custom_schema = load_custom_database_schema(database_schema=schema, tables=state.selected_tables)
-
-    #     state.generated_sql = self.sql_generator.run(user_question,custom_schema)
-    #     print(f"\nGenerated SQL query: {state.generated_sql}")
-
-    #     validation_result = self.sql_validator.validate(state.generated_sql, schema)
-    #     print(f"\nValidation result: {validation_result['valid']}\nErrors: {validation_result['errors']}")
-    #     state.validation_errors = validation_result['errors']
-    
-    #     while validation_result['valid'] == False and state.iteration < state.max_iterations:
-    #         state.validation_errors = validation_result['errors']
-    #         state.generated_sql = self.sql_generator.run(user_question,custom_schema,validation_errors=state.validation_errors,generated_sql=state.generated_sql)
-    #         validation_result = self.sql_validator.validate(state.generated_sql, schema)
-    #         print(f"\nGenerated SQL query after validation: {state.generated_sql}")
-        
-    #     state.query_result = self.sql_executor.run(state.generated_sql)
-    #     print(f"\nQuery result:\n{state.query_result}")
-
-    #     while state.query_result.shape[0] == 0 and state.iteration < state.max_iterations:
-    #         state.validation_errors = ["Empty result set returned from the query execution. Please generate a corrected SQL query."]
-    #         state.generated_sql = self.sql_generator.run(user_question,custom_schema,validation_errors=state.validation_errors,generated_sql=state.generated_sql)
-    #         validation_result = self.sql_validator.validate(state.generated_sql, schema)
-    #         print(f"\nGenerated SQL query after validation: {state.generated_sql}")
-    #         state.query_result = self.sql_executor.run(state.generated_sql)
-    #         print(f"\nQuery result:\n{state.query_result}")
-            
-
-    #     # -----------------------------------------
-    #     # Master Agent decision
-    #     # -----------------------------------------
-
-    #     decision = self.deeper_analysis_checker.run(user_question=user_question, query_result=state.query_result)
-
-    #     state.requires_deeper_analysis = decision["requires_deeper_analysis"]
-
-    #     print(f"\nDeeper analysis is required for the user's question:\n{decision}")
-
-    #     if not state.requires_deeper_analysis:
-    #         return state
-
-
-    #     # -----------------------------------------
-    #     # Iteration 2: Generate detailed query
-    #     # -----------------------------------------
-
-    #     state.required_grain = str(decision["required_grain"])
-    #     # state.required_metrics = decision.get("required_metrics", [])
-    #     state.identified_entities = decision.get("identified_entities", [])
-
-        
-    #     state.generated_sql = self.sql_generator.run(
-    #         user_question=user_question,
-    #         database_schema=custom_schema,
-    #         previous_result=state.query_result,
-    #         required_grain=state.required_grain,
-    #         # required_metrics=state.required_metrics,
-    #         identified_entities=state.identified_entities,
-    #     )
-    #     print(f"\nGenerated SQL query for deeper analysis: {state.generated_sql}")
-
-    #     validation_result = self.sql_validator.validate(state.generated_sql, schema)
-    #     print(f"\nValidation result: {validation_result['valid']}\nErrors: {validation_result['errors']}")
-    #     state.validation_errors = validation_result['errors']
-    
-    #     while validation_result['valid'] == False and state.iteration < state.max_iterations:
-    #         state.validation_errors = validation_result['errors']
-    #         state.generated_sql = self.sql_generator.run(user_question,custom_schema,validation_errors=state.validation_errors,generated_sql=state.generated_sql)
-    #         validation_result = self.sql_validator.validate(state.generated_sql, schema)
-    #         print(f"\nGenerated SQL query after validation: {state.generated_sql}")
-        
-    #     state.query_result = self.sql_executor.run(state.generated_sql)
-    #     print(f"\nQuery result:\n{state.query_result}")
-
-    #     while state.query_result.shape[0] == 0 and state.iteration < state.max_iterations:
-    #         state.validation_errors = ["Empty result set returned from the query execution. Please generate a corrected SQL query."]
-    #         state.generated_sql = self.sql_generator.run(user_question,custom_schema,validation_errors=state.validation_errors,generated_sql=state.generated_sql)
-    #         validation_result = self.sql_validator.validate(state.generated_sql, schema)
-    #         print(f"\nGenerated SQL query after validation: {state.generated_sql}")
-    #         state.query_result = self.sql_executor.run(state.generated_sql)
-    #         print(f"\nQuery result:\n{state.query_result}")
-
-
-    #     insights_generator = self.insights_generator
-    #     state.insights = insights_generator.run(user_question=user_question, query_result=state.query_result)
-
-    #     print(f"\nInsights generated for the user's question:\n{state.insights}")
-
-    #     kpi_generator = self.kpi_generator
-    #     state.kpis = kpi_generator.run(user_question=user_question, query_result=state.query_result)
-    #     print(f"\nKPIs generated for the user's question:\n{state.kpis}")
-
-    #     visualization_generator = self.visualization_generator
-    #     state.visualizations = visualization_generator.run(user_question=user_question, query_result=state.query_result)
-    #     print(f"\nVisualizations generated for the user's question:\n{state.visualizations}")
-
-    #     return state
-
-
-
-
+    @staticmethod
+    def _progress_message(agent_name: str) -> str:
+        return {
+            "table_selector": "Selecting the relevant IPL data tables.",
+            "sql_generator": "Preparing the statistical analysis.",
+            "sql_executor": "Querying the IPL database.",
+            "kpi_generator": "Selecting the key performance indicators.",
+            "insights_generator": "Generating statistical insights.",
+            "visualization_generator": "Planning the most useful visualization.",
+        }[agent_name]

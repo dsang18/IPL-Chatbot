@@ -2,9 +2,7 @@ from utils.sql_context_dataclass import SQLAgentContext
 from agents.sql_agent import SQLAgent
 from agents.table_selector_agent import TableSelectorAgent
 from agents.master_agent import MasterAgent
-from agents.sql_validator import SQLValidator
 from agents.sql_executor import SQLExecutor
-from agents.deeper_analysis import DeeperAnalysisChecker
 from agents.insights_agent import InsightGenerator
 from agents.kpi_agent import KPIGenerator
 from agents.visualization_agent import VisualizationGenerator
@@ -33,9 +31,7 @@ sql_context = SQLAgentContext(user_question=question)
 master_agent = MasterAgent(
     table_selector=TableSelectorAgent(),
     sql_generator=SQLAgent(),
-    sql_validator=SQLValidator(),
     sql_executor=SQLExecutor(),
-    deeper_analysis_checker=DeeperAnalysisChecker(),
     insights_generator=InsightGenerator(),
     kpi_generator=KPIGenerator(),
     visualization_generator=VisualizationGenerator(),

@@ -47,23 +47,16 @@ class MasterDecisionAgent:
             "user_question": state.user_question,
             "selected_tables": state.selected_tables,
             "generated_sql": state.generated_sql,
-            "validation_errors": state.validation_errors,
+            "execution_error": state.execution_error,
             "query_result": query_result,
-
-            "requires_deeper_analysis": (
-                state.requires_deeper_analysis
-            ),
-
-            "required_grain": state.required_grain,
-            "required_metrics": state.required_metrics,
-            "identified_entities": state.identified_entities,
 
             "kpis": state.kpis,
             "insights": state.insights,
             "visualizations": state.visualizations,
 
             "completed_agents": state.completed_agents,
-            "iteration": state.iteration
+            "sql_attempts": state.sql_attempts,
+            "max_sql_attempts": state.max_sql_attempts,
         }
 
         user_prompt = f"""

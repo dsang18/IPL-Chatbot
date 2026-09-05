@@ -38,34 +38,35 @@ Rules:
         ↓
    query_result
         ↓
-   analysis
+   kpi_generator -> insights_generator -> visualization_generator -> complete
 
-3. After sql_generator generates a SQL query, ALWAYS call sql_vexecutor next.
+3. After sql_generator generates a SQL query, ALWAYS call sql_executor next.
 
 4. The presence of `query_result` must NOT be interpreted as evidence that
    sql_executor has already run.
 
-5. An empty DataFrame does NOT mean that sql_executor has been executed.
-   Only consider the query executed when the current state explicitly
-   indicates that sql_executor has already completed.
+5. Use `completed_agents` to identify whether sql_executor has run.
 
 6. If the SQL has been generated successfully but has not yet been executed,
    the ONLY valid next agent is:
 
    sql_executor
 
-7. If sql_executor has executed and the resulting query_result is empty,
-   then sql_generator may be selected to regenerate the SQL.
+7. If sql_executor has executed and the result is empty or `execution_error`
+   is populated, select sql_generator while sql_attempts is below max_sql_attempts.
+   When the maximum is reached, return `no_data`.
 
 8. Do not skip sql_executor.
 
-9. KPI, insight, and visualization agents must only operate on the final
-    executed analytical dataset.
+9. KPI, insight, and visualization agents must only operate on a non-empty
+   executed analytical dataset. Run all three, including visualization_generator.
 
 10. Do not select an agent whose task has already been completed unless its
     output needs to be regenerated.
 
-11. Once all required outputs are available, return:
+11. `no_data` is a terminal outcome used only after all SQL attempts are exhausted.
+
+12. Once all required outputs are available, return:
 
     {
         "next_agent": "complete",

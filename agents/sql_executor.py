@@ -12,8 +12,5 @@ class SQLExecutor:
             if params:
                 return conn.execute(query, params).fetch_df()
             return conn.execute(query).fetch_df()
-        except Exception as e:
-            print(f"Error in executing the SQL Query - {e}")
-            return pd.DataFrame()
         finally:
             conn.close()
