@@ -1,5 +1,9 @@
 python -m uvicorn api.main:app --reload
+
 curl http://127.0.0.1:8000/health
+
 curl -N -X POST "http://127.0.0.1:8000/api/chat/stream" ^
   -H "Content-Type: application/json" ^
   -d "{\"message\":\"How has Kohli's batting improved over the years?\"}"
+
+python -m flask --app web.app run --port 5000

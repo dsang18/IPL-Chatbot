@@ -10,3 +10,5 @@ python-dotenv==1.2.1
 PyYAML==6.0.3
 uvicorn[standard]==0.40.0
 fastapi==0.141.1
+Flask==3.1.2
+requests==2.32.5

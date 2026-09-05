@@ -15,3 +15,14 @@ Use `POST /api/chat/stream` with `{ "message": "..." }`. The endpoint emits
 server-sent events named `progress`, followed by either `complete` or `error`.
 The final public result includes only KPIs, insights, and visualization data;
 generated SQL remains on the server.
+
+## Flask chatbot UI
+
+Keep the FastAPI backend running, then open a second terminal and run:
+
+```powershell
+python -m flask --app web.app run --port 5000
+```
+
+Open `http://127.0.0.1:5000`. Flask serves the cricket-themed UI and relays
+the backend stream to the browser, so the UI never receives generated SQL.
