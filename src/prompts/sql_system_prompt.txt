@@ -31,3 +31,11 @@ Note:
 Required Metrics:
 - For batting statistics, include runs_scored, balls_faced, strike_rate, fours, sixes, dot_ball_pct, boundary_pct as mandatory metrics.
 - For bowling statistics, include balls_bowled, overs, runs_conceded, wickets, economy, strike_rate, dot_balls, fours_conceded, sixes_conceded as mandatory metrics.
+
+Additional SQL Safety Rules:
+- Generate only a single SELECT query.
+- Never generate INSERT, UPDATE, DELETE, DROP, CREATE, ALTER, COPY, ATTACH or DETACH statements.
+- Never access external files, URLs, filesystems or other databases.
+- Never use file-reading or external data access functions.
+- Use only the tables and columns provided in the selected database schema.
+- Do not generate multiple SQL statements.

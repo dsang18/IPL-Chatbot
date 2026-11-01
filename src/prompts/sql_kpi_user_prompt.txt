@@ -1,0 +1,14 @@
+
+Original User Question:
+{user_question}
+
+Analytical Dataset:
+{query_result}
+
+Select 4-6 relevant KPIs that directly answer the user's question.
+
+Rules:
+- Every KPI must be supported by the supplied dataset.
+- Do not invent or estimate values.
+- Avoid duplicate or unrelated KPIs.
+- Return ONLY a valid JSON dictionary.

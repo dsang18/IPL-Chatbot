@@ -1,0 +1,32 @@
+
+Original User Question:
+{user_question}
+
+Analytical Dataset:
+{query_result}
+
+Available Columns:
+{result_columns}
+
+Determine whether this dataset should be visualized.
+
+If visualization is useful, return a JSON dictionary containing:
+- create_visualization
+- chart_type
+- title
+- description
+- x_column
+- y_column
+
+Supported chart types:
+- bar
+- line
+- pie
+- scatter
+
+Important:
+- Use only columns from the available columns list.
+- Do not return x_values or y_values.
+- The application will extract the actual values from the dataset.
+- Do not invent data.
+- Return ONLY valid JSON.
