@@ -16,6 +16,7 @@ from src.agents.sql_agent import SQLAgent
 from src.agents.sql_executor import SQLExecutor
 from src.agents.table_selector_agent import TableSelectorAgent
 from src.agents.visualization_agent import VisualizationGenerator
+from src.agents.query_planner_agent import QueryPlannerAgent
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s")
@@ -41,17 +42,20 @@ class ChatRequest(BaseModel):
 def create_master_agent() -> MasterAgent:
     try:
         print("[API] Initialising analysis agents.")
+
         return MasterAgent(
-            table_selector=TableSelectorAgent(), 
-            sql_generator=SQLAgent(), 
-            sql_executor=SQLExecutor(), 
-            insights_generator=InsightGenerator(), 
-            kpi_generator=KPIGenerator(), 
+            query_planner=QueryPlannerAgent(),
+            table_selector=TableSelectorAgent(),
+            sql_generator=SQLAgent(),
+            sql_executor=SQLExecutor(),
+            insights_generator=InsightGenerator(),
+            kpi_generator=KPIGenerator(),
             visualization_generator=VisualizationGenerator()
         )
+
     except Exception as error:
         raise RuntimeError(f"Unable to initialise the IPL analysis agents: {error}") from error
-
+        
 
 # Format an event as a Server-Sent Event message.
 def sse(event: str, data: dict) -> str:

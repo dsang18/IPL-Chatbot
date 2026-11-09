@@ -916,75 +916,59 @@ tables:
       
 
   agg_batter_vs_phase:
-      description: Stores aggregated statistics for each player in each phase of the innings in each season.
-      columns:
-        player_id:
-          type: INTEGER
-          description: Unique identifier of the player. This is a foreign key that references dim_player.player_id.
-        
-        season_id:
-          type: INTEGER
-          description: Unique identifier of the season. This is a foreign key that references dim_season.season_id.
-        
-        phase:
-          type: VARCHAR
-          description: The phase of the innings. Possible values are 'Powerplay Over', 'Middle Over', 'Death Over' and 'Super Over'.
-        
-        matches:
-          type: INTEGER
-          description: Total number of matches played by the player in that phase in that season.
-        
-        innings:
-          type: INTEGER
-          description: Total number of innings played by the player in that phase in that season.
-        
-        runs:
-          type: INTEGER
-          description: Total runs scored by the player in that phase in that season.
-        
-        balls:
-          type: INTEGER
-          description: Total number of valid balls faced by the player in that phase in that season.
-        
-        average:
-          type: FLOAT
-          description: Batting average of the player in that phase in that season, calculated as runs / innings.
-        
-        strike_rate:
-          type: FLOAT
-          description: Batting strike rate of the player in that phase in that season, calculated as (runs / balls) * 100.
-        
-        highest_score:
+    description: Stores season-wise batting statistics for each player in each innings phase. Each row represents one player, season and phase.
+    columns:
+      player_id:
         type: INTEGER
-        description: Highest score achieved by the player in a single innings at the venue in that season.
-      
-        fours:
-          type: INTEGER
-          description: Total number of fours hit by the player at the venue in that season.
-        
-        sixes:
-          type: INTEGER
-          description: Total number of sixes hit by the player at the venue in that season.
-        
-        fifties:
-          type: INTEGER
-          description: Total number of innings where the player scored between 50 and 99 runs at the venue in that season.
-        
-        hundreds:
-          type: INTEGER
-          description: Total number of innings where the player scored 100 or more runs at the venue in that season.
-        
-        dismissals:
-          type: INTEGER
-          description: Total number of times the player has been dismissed at the venue in that season.
-        
-        dot_ball_pct:
-          type: FLOAT
-          description: Percentage of dot balls faced by the player at the venue in that season, calculated as (dot_balls / balls) * 100.
-        
-        boundary_pct:
-          type: FLOAT
-          description: Percentage of balls faced by the player that resulted in a boundary (either four or six) at the venue in that season, calculated as (boundary_balls / balls) * 100.
+        description: Player identifier referencing dim_player.player_id.
+      season_id:
+        type: INTEGER
+        description: Season identifier referencing dim_season.season_id.
+      phase:
+        type: VARCHAR
+        description: Innings phase. Possible values are Powerplay Over, Middle Over, Death Over and Super Over.
+      matches:
+        type: INTEGER
+        description: Total matches played by the player in this phase and season.
+      innings:
+        type: INTEGER
+        description: Total innings played by the player in this phase and season.
+      runs:
+        type: INTEGER
+        description: Total runs scored by the player in this phase and season.
+      balls:
+        type: INTEGER
+        description: Total valid balls faced by the player in this phase and season.
+      average:
+        type: FLOAT
+        description: Batting average recorded for the player in this phase and season.
+      strike_rate:
+        type: FLOAT
+        description: Batting strike rate calculated as runs divided by balls multiplied by 100.
+      highest_score:
+        type: INTEGER
+        description: Highest individual innings score in this phase and season.
+      fours:
+        type: INTEGER
+        description: Total fours hit in this phase and season.
+      sixes:
+        type: INTEGER
+        description: Total sixes hit in this phase and season.
+      fifties:
+        type: INTEGER
+        description: Number of innings with scores between 50 and 99.
+      hundreds:
+        type: INTEGER
+        description: Number of innings with scores of 100 or more.
+      dismissals:
+        type: INTEGER
+        description: Total dismissals in this phase and season.
+      dot_ball_pct:
+        type: FLOAT
+        description: Percentage of valid balls faced that were dot balls.
+      boundary_pct:
+        type: FLOAT
+        description: Percentage of valid balls faced that resulted in a four or six.
 
 
   agg_bowler_vs_team:
@@ -1123,7 +1107,6 @@ tables:
           description: Total number of sixes conceded by the bowler at the venue in that season.
 
 
-
   agg_bowler_vs_phase:
       description: Stores aggregated statistics for each bowler in each phase of the innings in each season.
       columns:
@@ -1190,3 +1173,47 @@ tables:
         sixes_conceded:
           type: INTEGER
           description: Total number of sixes conceded by the bowler in the specified phase in that season.
+
+
+table_grains:
+  dim_player: One row per player.
+  dim_season: One row per IPL season.
+  dim_team: One row per team.
+  dim_umpire: One row per umpire.
+  dim_venue: One row per venue.
+  dim_match: One row per match.
+  fact_delivery: One row per ball delivery.
+  fact_delivery_enriched: One row per enriched ball delivery.
+  agg_team: One row per team per season.
+  agg_match: One row per match.
+  agg_venue: One row per venue per season.
+  agg_player_batting: One row per player per season for batting.
+  agg_player_bowling: One row per player per season for bowling.
+  agg_batter_vs_team: One row per batter per opposition team per season.
+  agg_batter_vs_venue: One row per batter per venue per season.
+  agg_batter_vs_phase: One row per batter per innings phase per season.
+  agg_bowler_vs_team: One row per bowler per opposition team per season.
+  agg_bowler_vs_venue: One row per bowler per venue per season.
+  agg_bowler_vs_phase: One row per bowler per innings phase per season.
+
+
+table_keys:
+  dim_player: [player_id]
+  dim_season: [season_id]
+  dim_team: [team_id]
+  dim_umpire: [umpire_id]
+  dim_venue: [venue_id]
+  dim_match: [match_id]
+  fact_delivery: [match_id, innings, ball_no]
+  fact_delivery_enriched: [match_id, innings, ball_no]
+  agg_team: [team_id, season_id]
+  agg_match: [match_id]
+  agg_venue: [venue_id, season_id]
+  agg_player_batting: [player_id, season_id]
+  agg_player_bowling: [player_id, season_id]
+  agg_batter_vs_team: [player_id, opposition_team_id, season_id]
+  agg_batter_vs_venue: [player_id, venue_id, season_id]
+  agg_batter_vs_phase: [player_id, phase, season_id]
+  agg_bowler_vs_team: [player_id, opposition_team_id, season_id]
+  agg_bowler_vs_venue: [player_id, venue_id, season_id]
+  agg_bowler_vs_phase: [player_id, phase, season_id]

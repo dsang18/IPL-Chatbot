@@ -1,0 +1,10 @@
+You are given the following IPL database schema:
+
+{database_schema}
+
+Understand the user's question and create a structured analytical query plan.
+
+User Question:
+{user_question}
+
+Return only the JSON query plan.

@@ -7,7 +7,7 @@ from src.utils.llm_utils import get_llm, invoke_llm, load_prompt, parse_structur
 class KPIGenerator:
 
     # Configure the KPI generation model.
-    def __init__(self, llm_model: str = "openai/gpt-oss-120b", model_provider: str = "groq", temperature: float = 0.0):
+    def __init__(self, llm_model: str = "gemini-3.5-flash-lite", model_provider: str = "google_genai", temperature: float = 0.0):
         self.llm_model = llm_model
         self.model_provider = model_provider
         self.temperature = temperature

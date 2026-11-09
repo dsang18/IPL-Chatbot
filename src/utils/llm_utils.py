@@ -17,10 +17,10 @@ load_dotenv(ROOT_DIR / ".env")
 
 # Initialise and cache the configured language model.
 @lru_cache(maxsize=8)
-def get_llm(model: str = "openai/gpt-oss-120b", provider: str = "groq", temperature: float = 0.0) -> Any:
+def get_llm(model: str = "gemini-3.5-flash-lite", provider: str = "google_genai", temperature: float = 0.0) -> Any:
     try:
         print(f"[LLM] Initialising {model} through {provider}.")
-        if provider == "groq" and not os.getenv("GROQ_API_KEY"):
+        if provider == "google_genai" and not os.getenv("GOOGLE_API_KEY"):
             raise EnvironmentError("GROQ_API_KEY is missing from the project environment.")
         return init_chat_model(model=model, model_provider=provider, temperature=temperature)
     except Exception as error:

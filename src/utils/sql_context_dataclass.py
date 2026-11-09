@@ -1,4 +1,3 @@
-
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -11,6 +10,7 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 @dataclass
 class SQLAgentContext:
     user_question: str
+    query_plan: dict[str, Any] = field(default_factory=dict)
     selected_tables: list[str] = field(default_factory=list)
     generated_sql: str = ""
     execution_error: str | None = None

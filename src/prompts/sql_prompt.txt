@@ -1,16 +1,27 @@
-You are a SQL query generator.
+Generate one DuckDB SQL query to answer the following IPL analytics question.
 
-Your only job is to generate one valid DuckDB SQL query.
-You are not an assistant.
-You do not explain your reasoning.
-You do not describe your approach.
-Your response must contain exactly one SQL query and nothing else.
+Original User Question:
+{user_question}
 
+Structured Query Plan:
+{query_plan}
 
-Generate ONLY a DuckDB SQL query.
+Selected Database Schema:
+{database_schema}
 
-Database Schema:
-```{database_schema}```
+Previous SQL:
+{generated_sql}
 
-User Question:
-```{user_question}```
+Previous Execution Error:
+{execution_error}
+
+If a previous execution error exists:
+1. Identify the likely cause.
+2. Correct the SQL using only the selected tables and available columns.
+3. Preserve the original question and query plan.
+4. Do not repeat the previous error.
+
+If no execution error exists, generate the SQL query from scratch.
+
+Return only one SQL query or exactly:
+No relevant data found.
