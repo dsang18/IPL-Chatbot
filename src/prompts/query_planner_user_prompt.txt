@@ -1,8 +1,14 @@
+
 You are given the following IPL database schema:
 
 {database_schema}
 
-Understand the user's question and create a structured analytical query plan.
+Relevant Conversational Context:
+{conversation_context}
+
+Understand the user's standalone analytical question and create a structured query plan.
+
+The question has already been resolved using conversation history. Use the conversational context only to preserve relevant analytical details.
 
 User Question:
 {user_question}

@@ -20,6 +20,7 @@ Rules:
 12. Prefer already calculated values from the supplied dataset rather than
     performing unnecessary calculations.
 13. KPI names should be concise and human-readable.
+14. If the data points have decimal values then round it up to 2 decimal places otherwise round it up to 0 decimal places.
 
 Example:
 

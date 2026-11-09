@@ -3,8 +3,10 @@ from pathlib import Path
 
 import duckdb
 
-ROOT_DIR = Path(__file__).resolve().parents[1]
+ROOT_DIR = Path(__file__).resolve().parents[2]
 DATABASE_FILE_PATH = ROOT_DIR / "database" / "ipl_analytics.duckdb"
+
+print(f"Database File Path : {DATABASE_FILE_PATH}")
 
 
 # Establish a read-only DuckDB connection with external access disabled.

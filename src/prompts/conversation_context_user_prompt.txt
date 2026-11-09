@@ -1,0 +1,13 @@
+
+Recent Conversation History:
+{conversation_history}
+
+Saved Analytical Context:
+{conversation_context}
+
+Current User Question:
+{user_question}
+
+Resolve the current question using the available context.
+
+Return only the required JSON response.

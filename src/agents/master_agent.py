@@ -24,11 +24,11 @@ class MasterAgent:
         self.visualization_generator = visualization_generator
 
     # Execute the complete analytical workflow.
-    def run(self, user_question: str, on_progress: ProgressCallback | None = None) -> SQLAgentContext:
+    def run(self, user_question: str, on_progress: ProgressCallback | None = None, conversation_context: dict | None = None) -> SQLAgentContext:
         try:
             print("[MASTER AGENT] Starting IPL analysis.")
 
-            state = SQLAgentContext(user_question=user_question)
+            state = SQLAgentContext(user_question=user_question, conversation_context=conversation_context or {})
             schema = load_database_schema(state.database_schema_path)
 
             self._emit(on_progress, "started", "Understanding your IPL question.")
@@ -112,10 +112,7 @@ class MasterAgent:
         try:
             if agent_name == "query_planner":
                 metadata_schema = get_query_planner_schema(schema)
-                plan = self.query_planner.run(
-                    state.user_question,
-                    metadata_schema
-                )
+                plan = self.query_planner.run(state.user_question, metadata_schema, state.conversation_context)
                 state.query_plan = plan
 
                 state.selected_tables = plan["entities"]

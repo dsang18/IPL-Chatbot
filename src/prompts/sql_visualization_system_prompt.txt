@@ -15,6 +15,7 @@ Rules:
 7. Prefer simple and readable charts.
 8. Return an empty list if no visualization is useful.
 9. Do not duplicate the same analytical comparison.
+10. If the data points have decimal values then round it up to 2 decimal places otherwise round it up to 0 decimal places.
 
 Supported chart types:
 - bar

@@ -1,136 +1,97 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IPL Analytics</title>
-  <style>    
-    .chart-svg { width: 100%; max-height: 280px; margin-top: 12px; overflow: visible; }
-    .chart-labels { display: flex; justify-content: space-between; gap: 8px; overflow: hidden; color: #64748b; font-size: 10px; }
-    .chart-labels span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .pie-wrap { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 24px; margin-top: 16px; }
-    .pie-chart { width: 180px; height: 180px; flex: 0 0 auto; border-radius: 50%; }
-    .pie-legend { display: grid; gap: 8px; min-width: 160px; }
-    .pie-legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-    .pie-legend-item strong { margin-left: auto; }
-    .pie-swatch { width: 10px; height: 10px; flex: 0 0 auto; border-radius: 2px; }
-    .chart-axis { margin-top: 10px !important; font-size: 11px; }
-    
-    .result-table-section {
-      margin-top: 22px;
-      width: 100%;
-    }
-
-    .result-table-section h3 {
-      margin-bottom: 12px;
-    }
-
-    .result-table-wrapper {
-      width: 100%;
-      overflow-x: auto;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-    }
-
-    .result-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-
-    .result-table th,
-    .result-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #e2e8f0;
-      text-align: left;
-    }
-
-    .result-table th {
-      background: #f1f5f9;
-      font-weight: 600;
-      text-transform: capitalize;
-    }
-
-    .result-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    .result-table tbody tr:hover {
-      background: #f8fafc;
-    }
-
-    .table-caption {
-      font-size: 11px;
-      color: #64748b;
-      margin-top: 8px;
-    }
-
-    
-    .domain-analytics {
-      margin-top: 20px;
-      padding: 12px;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-    }
-
-    .domain-analytics summary {
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 13px;
-    }
-
-    .domain-analytics pre {
-      margin-top: 12px;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      font-size: 12px;
-      color: #334155;
-    }
-
-
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#142238">
+  <meta name="description" content="Explore IPL statistics and cricket analytics through an AI-powered assistant.">
+  <title>IPL Insights | Cricket Analytics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
   <main class="app">
-    <header class="topbar">
+
+    <aside class="sidebar">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">🏏</span>
-        <span>IPL Analytics</span>
+        <span>IPL Insights</span>
       </div>
-      <div id="service-status" class="status">
-        Checking analytics service…
-      </div>
-    </header>
 
-    <section class="workspace" aria-label="IPL analytics chat">
-      <div class="workspace-head">
-        <h1>Cricket data assistant</h1>
-        <p>Ask focused IPL questions and get statistical answers.</p>
+      <div class="sidebar-label">Workspace</div>
+
+      <button id="new-chat" class="new-chat-button" type="button">
+        <span aria-hidden="true">＋</span>
+        New conversation
+      </button>
+
+      <div class="sidebar-info">
+        <strong>Cricket analytics, simplified.</strong>
+        <p>Ask questions about IPL seasons, players, teams, venues and match statistics.</p>
       </div>
-      <div id="chat" aria-live="polite">
-        <div class="chat-stack">
-          <article class="message message-intro">
-            <span class="message-label">IPL Analytics</span>
-            Ask about players, teams, seasons, venues, batting, or bowling.
-          </article>
+    </aside>
+
+    <section class="main-area">
+
+      <header class="topbar">
+        <div class="topbar-title">IPL Analytics Workspace</div>
+        <div id="service-status" class="status" role="status" aria-live="polite">
+          Checking service...
         </div>
-      </div>
-      <form id="chat-form">
-        <div class="composer">
-          <label class="sr-only" for="message">Your IPL question</label>
-          <textarea id="message" rows="1" maxlength="1000" required placeholder="Ask an IPL question…"></textarea>
-          <button id="send" class="ask-button" type="submit">Ask</button>
+      </header>
+
+      <section class="workspace" aria-label="IPL analytics assistant">
+
+        <div class="workspace-head">
+          <p class="eyebrow">Your cricket data assistant</p>
+          <h1>What would you like to explore?</h1>
+          <p>Ask a question. Discover the numbers behind the game.</p>
         </div>
-        <div class="suggestions">
-          <button type="button" class="suggestion">Kohli's improvement over the years</button>
-          <button type="button" class="suggestion">Best bowlers at Wankhede</button>
-          <button type="button" class="suggestion">Top death-over hitters</button>
+
+        <div id="chat" aria-live="polite" aria-relevant="additions">
+          <div class="chat-stack">
+            <article class="message message-intro">
+              <span class="message-label">IPL Insights Assistant</span>
+              Welcome! I can help you explore IPL data across seasons, teams,
+              players and venues. Ask a question to get started.
+            </article>
+          </div>
         </div>
-      </form>
+
+        <div class="composer-wrap">
+
+          <div class="suggestions" aria-label="Suggested questions">
+            <button type="button" class="suggestion">Kohli's improvement over the years</button>
+            <button type="button" class="suggestion">Best bowlers at Wankhede</button>
+            <button type="button" class="suggestion">Top death-over hitters</button>
+            <button type="button" class="suggestion">Compare teams across seasons</button>
+          </div>
+
+          <form id="chat-form">
+            <div class="composer">
+              <label class="sr-only" for="message">Your IPL question</label>
+              <textarea
+                id="message"
+                rows="1"
+                maxlength="1000"
+                required
+                placeholder="Ask anything about IPL statistics..."
+              ></textarea>
+              <button id="send" class="ask-button" type="submit">
+                Send ↗
+              </button>
+            </div>
+            <div class="composer-hint">
+              <span>Enter to send · Shift + Enter for a new line</span>
+              <span id="character-count">0 / 1000</span>
+            </div>
+          </form>
+
+        </div>
+      </section>
     </section>
-
   </main>
+
   <script src="{{ url_for('static', filename='chat.js') }}"></script>
 </body>
 </html>

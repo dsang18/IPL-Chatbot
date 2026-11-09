@@ -7,3 +7,6 @@ __pycache__/
 htmlcov/
 data/
 .DS_Store
+database/conversations.sqlite3
+database/conversations.sqlite3-shm
+database/conversations.sqlite3-wal
