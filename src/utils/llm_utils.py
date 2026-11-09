@@ -22,7 +22,7 @@ def get_llm(model: str = "gemini-3.5-flash-lite", provider: str = "google_genai"
         print(f"[LLM] Initialising {model} through {provider}.")
         if provider == "google_genai" and not os.getenv("GOOGLE_API_KEY"):
             raise EnvironmentError("GROQ_API_KEY is missing from the project environment.")
-        return init_chat_model(model=model, model_provider=provider, temperature=temperature)
+        return init_chat_model(model=model, model_provider=provider,) # temperature=temperature)
     except Exception as error:
         raise RuntimeError(f"LLM initialisation failed for model '{model}' and provider '{provider}': {error}") from error
 

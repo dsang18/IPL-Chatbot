@@ -3,10 +3,10 @@ from collections.abc import Callable
 from src.utils.sql_context_dataclass import SQLAgentContext
 from src.utils.schema_loader import (
     get_query_planner_schema,
-    get_table_selector_schema,
     load_custom_database_schema,
     load_database_schema
 )
+
 
 
 ProgressCallback = Callable[[str, str], None]
@@ -15,9 +15,8 @@ ProgressCallback = Callable[[str, str], None]
 class MasterAgent:
 
     # Initialise the agents required for IPL analysis.
-    def __init__(self, query_planner, table_selector, sql_generator, sql_executor, insights_generator, kpi_generator, visualization_generator):
+    def __init__(self, query_planner, sql_generator, sql_executor, insights_generator, kpi_generator, visualization_generator):
         self.query_planner = query_planner
-        self.table_selector = table_selector
         self.sql_generator = sql_generator
         self.sql_executor = sql_executor
         self.insights_generator = insights_generator
@@ -35,6 +34,7 @@ class MasterAgent:
             self._emit(on_progress, "started", "Understanding your IPL question.")
 
             while True:
+                print(f"\n"+"-"*50)
                 next_agent = self._next_agent(state)
                 state.next_agent = next_agent
 
@@ -53,6 +53,7 @@ class MasterAgent:
 
                 self.execute_agent(next_agent, state, schema)
                 state.completed_agents.append(next_agent)
+                print("-"*50)
 
         except Exception as error:
             raise RuntimeError(
@@ -68,10 +69,10 @@ class MasterAgent:
             if not state.query_plan.get("answerable", False):
                 return "no_data"
 
-            if not state.selected_tables:
-                if "table_selector" not in state.completed_agents:
-                    return "table_selector"
-                return "no_data"
+            # if not state.selected_tables:
+            #     if "table_selector" not in state.completed_agents:
+            #         return "table_selector"
+            #     return "no_data"
 
             if state.generated_sql.strip().lower() == "no relevant data found.":
                 return "no_data"
@@ -107,37 +108,25 @@ class MasterAgent:
             raise RuntimeError(f"Unable to determine the next agent: {error}") from error
 
     # Execute the requested agent and update the shared analysis state.
-    def execute_agent(self, agent_name: str, state: SQLAgentContext, schema: dict) -> None:
+    def execute_agent(self, agent_name: str, state: SQLAgentContext, schema: dict) -> None:    
         try:
             if agent_name == "query_planner":
                 metadata_schema = get_query_planner_schema(schema)
-
-                state.query_plan = self.query_planner.run(
+                plan = self.query_planner.run(
                     state.user_question,
                     metadata_schema
                 )
+                state.query_plan = plan
 
-            elif agent_name == "table_selector":
-                metadata_schema = get_table_selector_schema(schema)
+                state.selected_tables = plan["entities"]
 
-                state.selected_tables = self.table_selector.run(
-                    state.user_question,
-                    state.query_plan,
-                    metadata_schema
-                )
-
-            if agent_name == "query_planner":
-                state.query_plan = self.query_planner.run(
-                    state.user_question,
-                    metadata_schema
-                )
-
-            elif agent_name == "table_selector":
-                state.selected_tables = self.table_selector.run(
-                    state.user_question,
-                    state.query_plan,
-                    metadata_schema
-                )
+            # elif agent_name == "table_selector":
+            #     metadata_schema = get_table_selector_schema(schema)
+            #     state.selected_tables = self.table_selector.run(
+            #         state.user_question,
+            #         state.query_plan,
+            #         metadata_schema
+            #     )
 
             elif agent_name == "sql_generator":
                 custom_schema = load_custom_database_schema(
@@ -203,7 +192,10 @@ class MasterAgent:
                 raise ValueError(f"Unknown agent: {agent_name}.")
 
         except Exception as error:
-            raise RuntimeError(f"Agent '{agent_name}' failed: {error}") from error
+            raise RuntimeError(
+                f"Agent '{agent_name}' failed: {error}"
+            ) from error
+
 
     # Send progress updates to the API when a callback is available.
     @staticmethod

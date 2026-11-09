@@ -8,25 +8,12 @@ Analytical Dataset:
 Available Columns:
 {result_columns}
 
-Determine whether this dataset should be visualized.
+Identify up to THREE useful visualizations.
 
-If visualization is useful, return a JSON dictionary containing:
-- create_visualization
-- chart_type
-- title
-- description
-- x_column
-- y_column
-
-Supported chart types:
-- bar
-- line
-- pie
-- scatter
-
-Important:
-- Use only columns from the available columns list.
-- Do not return x_values or y_values.
-- The application will extract the actual values from the dataset.
+Requirements:
+- Use only available columns.
+- Select charts that directly answer the question.
+- Avoid duplicate visualizations.
 - Do not invent data.
+- Return an empty JSON list if visualization is unnecessary.
 - Return ONLY valid JSON.

@@ -7,18 +7,18 @@ class SQLAgent:
     def __init__(self, llm_model: str = "gemini-3.5-flash-lite", model_provider: str = "google_genai", temperature: float = 0.0):
         self.llm_model = llm_model
         self.model_provider = model_provider
-        self.temperature = temperature
+        # self.temperature = temperature
 
     # Generate SQL using the structured query plan and selected database schema.
     def run(self, user_question: str, query_plan: dict, database_schema: dict, execution_error: str | None = None, generated_sql: str = "") -> str:
         try:
             print("[SQL AGENT] Generating SQL.")
 
-            llm = get_llm(self.llm_model, self.model_provider, self.temperature)
+            llm = get_llm(self.llm_model, self.model_provider)
 
             system_prompt = load_prompt("./src/prompts/sql_system_prompt.txt")
 
-            user_prompt = load_prompt("./src/prompts/sql_prompt.txt").format(
+            user_prompt = load_prompt("./src/prompts/sql_user_prompt.txt").format(
                 user_question=user_question,
                 query_plan=json.dumps(query_plan, separators=(",", ":")),
                 database_schema=json.dumps(database_schema, separators=(",", ":")),
@@ -39,6 +39,7 @@ class SQLAgent:
                 sql_query += ";"
 
             print("[SQL AGENT] SQL generation completed.")
+            print(f"{sql_query}")
             return sql_query
 
         except Exception as error:

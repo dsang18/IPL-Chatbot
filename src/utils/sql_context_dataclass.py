@@ -17,10 +17,10 @@ class SQLAgentContext:
     query_result: pd.DataFrame = field(default_factory=pd.DataFrame)
     insights: list[str] = field(default_factory=list)
     kpis: dict[str, Any] = field(default_factory=dict)
-    visualizations: dict[str, Any] = field(default_factory=dict)
+    visualizations: list[dict[str, Any]] = field(default_factory=list)
     next_agent: str = ""
     completed_agents: list[str] = field(default_factory=list)
     sql_attempts: int = 0
     max_sql_attempts: int = 3
     database_schema_path: Path = ROOT_DIR / "database" / "database_schema.yaml"
-    database_path: Path = ROOT_DIR / "database" / "ipl_analytics.duckdb"
+    database_path: Path = ROOT_DIR / "database" / "ipl_analytics.duckdb"    

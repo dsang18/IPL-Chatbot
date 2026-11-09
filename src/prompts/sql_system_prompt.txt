@@ -23,7 +23,6 @@ GENERAL RULES:
 - Avoid SELECT * unless the question explicitly requires all columns.
 - Use LIKE for filtering player, team and venue names. Use single quotes for string values.
 - Use the actual column names and descriptions in the supplied schema.
-- Use 'LIKE' operator in the sql query while filtering for any specific value. The substring to match should always be in uppercase.
 
 TABLE GRAIN AND AGGREGATION:
 

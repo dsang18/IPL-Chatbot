@@ -134,41 +134,133 @@ function renderPieChart(labels, values, total) {
   }
 }
 
-// Render the chart type selected by the Visualization Agent.
-
-function chartMarkup(chart) {
+ // Render one visualization returned by the backend.
+function singleChartMarkup(chart) {
   try {
     if (!chart?.create_visualization) return '';
+
     const xValues = chart.x_values;
     const labels = chart.x_labels || xValues?.map(String);
     const values = chart.y_values?.map(Number);
+
     if (!Array.isArray(labels) || !Array.isArray(xValues) || !Array.isArray(values) || !labels.length || labels.length !== values.length || !values.every(Number.isFinite)) return '';
+
     const chartType = chart.chart_type;
     const maxValue = Math.max(...values.map(Math.abs), 1);
     const total = values.reduce((sum, value) => sum + value, 0);
+
     let chartContent = '';
+
     if (chartType === 'bar') chartContent = renderBarChart(labels, values, maxValue);
     else if (chartType === 'line' || chartType === 'scatter') chartContent = renderXYChart(labels, xValues, values, chartType);
     else if (chartType === 'pie' && values.every(value => value >= 0) && total > 0) chartContent = renderPieChart(labels, values, total);
     else return '';
+
     return `<section class="chart"><p class="chart-type">${escapeHtml(chartType)}</p><h3>${escapeHtml(chart.title || 'IPL Visualisation')}</h3><p>${escapeHtml(chart.description || '')}</p>${chartContent}<p class="chart-axis">${escapeHtml(chart.x_column || 'Category')} · ${escapeHtml(chart.y_column || 'Value')}</p></section>`;
+
   } catch (error) {
     console.error(`[FRONTEND] Chart rendering failed: ${error.message}`);
     return '';
   }
 }
 
+// Render all visualizations returned by the backend.
+function chartMarkup(visualizations) {
+  try {
+    if (!Array.isArray(visualizations)) return '';
+    return visualizations.map(singleChartMarkup).filter(Boolean).join('');
+  } catch (error) {
+    console.error(`[FRONTEND] Multiple chart rendering failed: ${error.message}`);
+    return '';
+  }
+}
 
-// Add the completed analytical result to the chat.
+// Render the analytical result table.
+function resultTable(table) {
+  try {
+    if (!table || !Array.isArray(table.columns) || !Array.isArray(table.rows) || !table.rows.length) return '';
+
+    const headers = table.columns.map(column => `<th>${escapeHtml(column.replaceAll('_', ' '))}</th>`).join('');
+
+    const rows = table.rows.map(row => `
+      <tr>
+        ${table.columns.map(column => `<td>${escapeHtml(row[column])}</td>`).join('')}
+      </tr>
+    `).join('');
+
+    return `
+      <section class="result-table-section">
+        <h3>Analytical Results</h3>
+        <div class="result-table-wrapper">
+          <table class="result-table">
+            <thead><tr>${headers}</tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <p class="table-caption">Showing up to 100 returned records.</p>
+      </section>
+    `;
+
+  } catch (error) {
+    console.error(`[FRONTEND] Result table rendering failed: ${error.message}`);
+    return '';
+  }
+}
+
+// Render domain-specific cricket analytics in a collapsible section.
+function domainAnalyticsMarkup(analytics) {
+  try {
+    if (!analytics || typeof analytics !== 'object' || !Object.keys(analytics).length) return '';
+
+    return `
+      <details class="domain-analytics">
+        <summary>Advanced Cricket Analytics</summary>
+        <pre>${escapeHtml(JSON.stringify(analytics, null, 2))}</pre>
+      </details>
+    `;
+  } catch (error) {
+    console.error(`[FRONTEND] Domain analytics rendering failed: ${error.message}`);
+    return '';
+  }
+}
+
+ // Add the completed analytical result to the chat.
 function addResult(data) {
   try {
     const noData = data.status === 'no_data';
-    chat.firstElementChild.insertAdjacentHTML('beforeend', `<article class="message analysis-card"><p class="analysis-title">${noData ? 'No data found' : 'Analysis complete'}</p>${noData ? `<p>${escapeHtml(data.message || 'No relevant data found.')}</p>` : `${kpiCards(data.kpis)}${insightsList(data.insights)}${chartMarkup(data.visualization)}`}</article>`);
+    const visualizations = data.visualizations || (data.visualization ? [data.visualization] : []);
+
+    chat.firstElementChild.insertAdjacentHTML(
+      'beforeend',
+      `
+        <article class="message analysis-card">
+          <p class="analysis-title">${noData ? 'No data found' : 'Analysis complete'}</p>
+          ${
+            noData
+              ? `<p>${escapeHtml(data.message || 'No relevant data found.')}</p>`
+              : `
+                ${kpiCards(data.kpis)}
+                ${insightsList(data.insights)}
+                ${chartMarkup(visualizations)}
+                ${resultTable(data.table)}
+                ${domainAnalyticsMarkup(data.domain_analytics)}
+              `
+          }
+        </article>
+      `
+    );
+
     scrollToLatest();
-  } catch (error) {
+
+    } catch (error) {
     console.error(`[FRONTEND] Unable to display analysis result: ${error.message}`);
-  }
+    }
 }
+
+
+
+
+
 
 // Process one complete Server-Sent Event.
 function processSSEEvent(rawEvent, progressId) {

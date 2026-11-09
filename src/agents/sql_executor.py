@@ -50,9 +50,7 @@ class SQLExecutor:
                     f"Query returned {len(result)} rows, exceeding the {self.max_rows}-row limit."
                 )
 
-            print(
-                f"[SQL EXECUTOR] Execution completed. Rows returned: {len(result)}."
-            )
+            print(f"[SQL EXECUTOR] Execution completed. Rows returned: {len(result)}.")
 
             return result
 

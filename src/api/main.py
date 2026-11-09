@@ -14,7 +14,6 @@ from src.agents.kpi_agent import KPIGenerator
 from src.agents.master_agent import MasterAgent
 from src.agents.sql_agent import SQLAgent
 from src.agents.sql_executor import SQLExecutor
-from src.agents.table_selector_agent import TableSelectorAgent
 from src.agents.visualization_agent import VisualizationGenerator
 from src.agents.query_planner_agent import QueryPlannerAgent
 
@@ -45,7 +44,6 @@ def create_master_agent() -> MasterAgent:
 
         return MasterAgent(
             query_planner=QueryPlannerAgent(),
-            table_selector=TableSelectorAgent(),
             sql_generator=SQLAgent(),
             sql_executor=SQLExecutor(),
             insights_generator=InsightGenerator(),
@@ -89,10 +87,34 @@ def stream_chat(request: ChatRequest):
         try:
             logger.info("Analysis started. Conversation ID: %s", conversation_id)
             state = create_master_agent().run(request.message, on_progress=on_progress)
+            
             if state.next_agent == "no_data":
-                result = {"conversation_id": conversation_id, "status": "no_data", "message": "No relevant data found.", "kpis": {}, "insights": [], "visualization": None}
+                result = {
+                    "conversation_id": conversation_id,
+                    "status": "no_data",
+                    "message": "No relevant data found.",
+                    "kpis": {},
+                    "insights": [],
+                    "visualizations": [],
+                    "table": {"columns": [], "rows": []},
+                    "domain_analytics": {},
+                }
+
             else:
-                result = {"conversation_id": conversation_id, "status": "complete", "kpis": state.kpis, "insights": state.insights, "visualization": state.visualizations}
+                result = {
+                    "conversation_id": conversation_id,
+                    "status": "complete",
+                    "kpis": state.kpis,
+                    "insights": state.insights,
+                    "visualizations": state.visualizations,
+                    "table": {
+                        "columns": state.query_result.columns.tolist(),
+                        "rows": state.query_result.head(100).to_dict(orient="records")
+                    },
+                    
+                    "domain_analytics": state.domain_analytics,
+                }
+
             events.put(("complete", result))
             logger.info("Analysis completed. Conversation ID: %s", conversation_id)
         except Exception as error:

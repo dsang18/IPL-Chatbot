@@ -7,14 +7,14 @@ class QueryPlannerAgent:
     def __init__(self, llm_model: str = "gemini-3.5-flash-lite", model_provider: str = "google_genai", temperature: float = 0.0):
         self.llm_model = llm_model
         self.model_provider = model_provider
-        self.temperature = temperature
+        # self.temperature = temperature
 
     # Convert the user's question into a structured analytical plan.
     def run(self, user_question: str, metadata_schema: dict) -> dict:
         try:
             print("[QUERY PLANNER] Creating analytical query plan.")
 
-            llm = get_llm(self.llm_model, self.model_provider, self.temperature)
+            llm = get_llm(self.llm_model, self.model_provider)
 
             system_prompt = load_prompt("./src/prompts/query_planner_system_prompt.txt")
             user_prompt = load_prompt("./src/prompts/query_planner_user_prompt.txt").format(
@@ -57,6 +57,10 @@ class QueryPlannerAgent:
                 raise ValueError("Query plan intent cannot be empty.")
 
             print(f"[QUERY PLANNER] Intent identified: {query_plan['intent']}.")
+
+            for key,value in query_plan.items():
+                print(f"• {key} ➜ {value}")
+                
             return query_plan
 
         except Exception as error:
