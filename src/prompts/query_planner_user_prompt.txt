@@ -6,11 +6,18 @@ You are given the following IPL database schema:
 Relevant Conversational Context:
 {conversation_context}
 
-Understand the user's standalone analytical question and create a structured query plan.
+Create a structured analytical plan for the user's standalone question.
 
-The question has already been resolved using conversation history. Use the conversational context only to preserve relevant analytical details.
+Determine whether one SQL query is sufficient or whether multiple dependent analytical steps are necessary.
+
+For every step:
+- Describe the analytical operation clearly.
+- Specify the exact output values needed by later steps.
+- Identify dependencies using earlier step IDs.
+- Do not include SQL.
+- Use only entities and metrics supported by the schema.
 
 User Question:
 {user_question}
 
-Return only the JSON query plan.
+Return only the JSON plan using the required structure.

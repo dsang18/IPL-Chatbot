@@ -18,6 +18,7 @@ from src.agents.query_planner_agent import QueryPlannerAgent
 from src.agents.sql_agent import SQLAgent
 from src.agents.sql_executor import SQLExecutor
 from src.agents.visualization_agent import VisualizationGenerator
+from src.agents.result_synthesizer_agent import ResultSynthesizer
 from src.utils.conversation_store import create_conversation, get_conversation, initialize_conversation_store, save_message, update_conversation_context
 
 
@@ -41,14 +42,13 @@ class ChatRequest(BaseModel):
         return value.strip()
 
 
-# Create the agents required for one analysis request.
+# Initialise all agents required for single-step and multi-step analysis.
 def create_master_agent() -> MasterAgent:
     try:
         print("[API] Initialising analysis agents.")
-        return MasterAgent(query_planner=QueryPlannerAgent(), sql_generator=SQLAgent(), sql_executor=SQLExecutor(), insights_generator=InsightGenerator(), kpi_generator=KPIGenerator(), visualization_generator=VisualizationGenerator())
+        return MasterAgent(query_planner=QueryPlannerAgent(), sql_generator=SQLAgent(), sql_executor=SQLExecutor(), insights_generator=InsightGenerator(), kpi_generator=KPIGenerator(), visualization_generator=VisualizationGenerator(), result_synthesizer=ResultSynthesizer())
     except Exception as error:
         raise RuntimeError(f"Unable to initialise the IPL analysis agents: {error}") from error
-
 
 # Format an event as a Server-Sent Event message.
 def sse(event: str, data: dict[str, Any]) -> str:
@@ -62,10 +62,10 @@ def sse(event: str, data: dict[str, Any]) -> str:
 def build_conversation_context(state: Any) -> dict[str, Any]:
     try:
         print("[API] Building compact analytical conversation context.")
-        return {"last_question": state.user_question, "intent": state.query_plan.get("intent", ""), "entities": state.query_plan.get("entities", []), "metrics": state.query_plan.get("metrics", []), "filters": state.query_plan.get("filters", []), "group_by": state.query_plan.get("group_by", []), "result_preview": state.query_result.head(5).to_dict(orient="records")}
+        return {"last_question": state.user_question, "intent": state.query_plan.get("intent", ""), "entities": state.query_plan.get("entities", []), "metrics": state.query_plan.get("metrics", []), "filters": state.query_plan.get("filters", []), "group_by": state.query_plan.get("group_by", []), "execution_mode": state.query_plan.get("execution_mode", "single"), "analytical_steps": [{"step_id": step["step_id"], "objective": step["objective"]} for step in state.analytical_steps], "result_preview": state.query_result.head(5).to_dict(orient="records")}
     except Exception as error:
         raise RuntimeError(f"Unable to build analytical conversation context: {error}") from error
-
+    
 
 # Create a concise assistant message for conversation history.
 def build_assistant_answer(state: Any) -> str:

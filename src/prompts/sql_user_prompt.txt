@@ -1,13 +1,17 @@
-Generate one DuckDB SQL query to answer the following IPL analytics question.
+
+Generate one DuckDB SQL query for the current analytical step.
 
 Original User Question:
 {user_question}
 
-Structured Query Plan:
+Current Step Query Plan:
 {query_plan}
 
 Selected Database Schema:
 {database_schema}
+
+Intermediate Results from Completed Steps:
+{intermediate_results}
 
 Previous SQL:
 {generated_sql}
@@ -15,13 +19,13 @@ Previous SQL:
 Previous Execution Error:
 {execution_error}
 
-If a previous execution error exists:
-1. Identify the likely cause.
-2. Correct the SQL using only the selected tables and available columns.
-3. Preserve the original question and query plan.
-4. Do not repeat the previous error.
-
-If no execution error exists, generate the SQL query from scratch.
+Instructions:
+1. Solve only the current analytical step.
+2. Use intermediate results when the step depends on earlier steps.
+3. Treat intermediate results as data values, not database tables.
+4. Use only columns and tables from the selected schema.
+5. If a previous execution error exists, correct the SQL while preserving the step objective.
+6. Do not repeat a previous SQL error.
 
 Return only one SQL query or exactly:
 No relevant data found.

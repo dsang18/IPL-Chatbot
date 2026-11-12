@@ -13,6 +13,11 @@ class SQLAgentContext:
     user_question: str
     conversation_context: dict[str, Any] = field(default_factory=dict)
     query_plan: dict[str, Any] = field(default_factory=dict)
+    analytical_plan: dict[str, Any] = field(default_factory=dict)
+    analytical_steps: list[dict[str, Any]] = field(default_factory=list)
+    step_results: dict[str, pd.DataFrame] = field(default_factory=dict)
+    execution_trace: list[dict[str, Any]] = field(default_factory=list)
+    current_step_id: str | None = None
     selected_tables: list[str] = field(default_factory=list)
     generated_sql: str = ""
     execution_error: str | None = None
@@ -25,5 +30,7 @@ class SQLAgentContext:
     completed_agents: list[str] = field(default_factory=list)
     sql_attempts: int = 0
     max_sql_attempts: int = 3
+    max_analytical_steps: int = 4
+    max_sql_attempts_per_step: int = 3
     database_schema_path: Path = ROOT_DIR / "database" / "database_schema.yaml"
     database_path: Path = ROOT_DIR / "database" / "ipl_analytics.duckdb"

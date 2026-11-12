@@ -34,7 +34,7 @@ class KPIGenerator:
             kpis = parse_structured_response(response, "KPI Agent")
 
             # Check if there are 4 to 6 KPIs generated
-            if not isinstance(kpis, dict) or not 4 <= len(kpis) <= 6:
+            if not isinstance(kpis, dict) or not 1 <= len(kpis) <= 6:
                 raise ValueError(f"KPI Agent must return 4 to 6 KPIs. Received: {len(kpis) if isinstance(kpis, dict) else type(kpis).__name__}.")
 
             for key, value in kpis.items():

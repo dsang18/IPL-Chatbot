@@ -1,0 +1,13 @@
+
+Synthesize the following completed IPL analytical results.
+
+Analysis data:
+{analysis_data}
+
+Provide:
+1. A concise summary that directly answers the original question.
+2. A list of evidence-based insights connecting the step results.
+
+Use only the supplied data. If a conclusion cannot be supported, state the limitation.
+
+Return only the required JSON object.
